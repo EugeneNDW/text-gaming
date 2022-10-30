@@ -26,7 +26,7 @@ fun main(arg: Array<String>) {
 
     val bot = bot {
         logLevel = LogLevel.Network.Body
-        token = "5382561068:AAF6ZwW0FUqnjuwp0OB7NGD1NB9pwTaDNUU"
+        token = ""
         dispatch {
 
             command("start_in") {
