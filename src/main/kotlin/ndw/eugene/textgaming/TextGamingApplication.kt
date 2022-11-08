@@ -26,7 +26,7 @@ fun main(arg: Array<String>) {
 
     val bot = bot {
         logLevel = LogLevel.Network.Body
-        token = ""
+        token = System.getenv("TOKEN")
         dispatch {
 
             command("start_in") {
@@ -90,7 +90,7 @@ private fun sendGameMessage(bot: Bot, chatId: Long, message: GameMessage) {
 
 private fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
     var result = ""
-    result += prepareForMarkdown("${conversationPart.character}: ${conversationPart.text}")
+    result += prepareForMarkdown(conversationPart.text)
     result += "\n"
     result += "\n"
 
