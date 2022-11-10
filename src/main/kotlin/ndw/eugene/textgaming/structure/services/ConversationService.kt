@@ -42,9 +42,8 @@ class ConversationService(
     }
 
     private fun getOptions(userState: UserState): List<Option> {
-        return locationService.getOptionsByLocationAndConversationId(
-            userState.location,
-            userState.currentConversationId
-        )
+        val locationData = locationService.getLocationData(userState.location)
+
+        return locationData.convToOption[userState.currentConversationId] ?: listOf()
     }
 }

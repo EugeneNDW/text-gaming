@@ -7,6 +7,7 @@ import com.github.kotlintelegrambot.dispatcher.callbackQuery
 import com.github.kotlintelegrambot.dispatcher.command
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
+import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import com.github.kotlintelegrambot.logging.LogLevel
@@ -19,7 +20,7 @@ import ndw.eugene.textgaming.structure.data.UserOption
 import ndw.eugene.textgaming.structure.services.*
 import ndw.eugene.textgaming.utils.ConversationLoader
 
-fun main(arg: Array<String>) {
+fun main() {
     println("запустились")
     val gameService = initGameService()
     println("инициализировались и готовы принимать запросы")
@@ -45,15 +46,40 @@ fun main(arg: Array<String>) {
             }
 
             callbackQuery {
-                val chatId = callbackQuery.message?.chat?.id ?: return@callbackQuery
+                val message = callbackQuery.message
+                val chatId = message?.chat?.id ?: return@callbackQuery
                 val result = gameService.chooseOption(chatId, callbackQuery.data)
 
+                editMessage(bot, message)
                 sendGameMessage(bot, chatId, result)
             }
         }
     }
 
     bot.startPolling()
+}
+
+private fun removeButtons(bot: Bot, message: Message) {
+    bot.editMessageReplyMarkup(
+        chatId = ChatId.fromId(message.chat.id),
+        messageId = message.messageId,
+    )
+}
+
+private fun editMessage(bot: Bot, message: Message) {
+    val messageTokens = message.text!!.split("\n\n")
+    val messageWithoutTokens = messageTokens[0]
+    val messageWithoutOptionsTokens = messageWithoutTokens.split("\n")
+    val newText = makeTextBold(prepareForMarkdown(messageWithoutOptionsTokens[0])) + " \n" + prepareForMarkdown(
+        messageWithoutOptionsTokens[1]
+    )
+
+    bot.editMessageText(
+        chatId = ChatId.fromId(message.chat.id),
+        messageId = message.messageId,
+        text = newText,
+        parseMode = ParseMode.MARKDOWN_V2
+    )
 }
 
 private fun initGameService(): GameService {
@@ -89,10 +115,17 @@ private fun sendGameMessage(bot: Bot, chatId: Long, message: GameMessage) {
 }
 
 private fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
+    //todo учитывать пользовательские настройки когда они будут сделаны.
     var result = ""
-    result += prepareForMarkdown(conversationPart.text)
+    result += makeTextBold(prepareForMarkdown("${conversationPart.character}:")) + "\n" + prepareForMarkdown(
+        conversationPart.text
+    )
     result += "\n"
     result += "\n"
+
+    if (options.size == 1 && options[0].option.optionText == "...") {
+        return result
+    }
 
     options.forEachIndexed { index, userOption ->
         val text = "${index + 1} : ${userOption.option.optionText}"
@@ -143,14 +176,23 @@ private fun makeStrikeThrough(text: String): String {
 private fun optionsToButtons(options: List<UserOption>): InlineKeyboardMarkup {
     val buttons: MutableList<InlineKeyboardButton> = mutableListOf()
 
-    options.forEachIndexed { index, userOption ->
-        if (userOption.available) {
-            buttons.add(
-                InlineKeyboardButton.CallbackData(
-                    text = "${index + 1}",
-                    callbackData = "${userOption.option.uuid}"
-                )
+    if (options.size == 1 && options[0].option.optionText == "...") {
+        buttons.add(
+            InlineKeyboardButton.CallbackData(
+                text = "continue...",
+                callbackData = "${options[0].option.uuid}"
             )
+        )
+    } else {
+        options.forEachIndexed { index, userOption ->
+            if (userOption.available) {
+                buttons.add(
+                    InlineKeyboardButton.CallbackData(
+                        text = "${index + 1}",
+                        callbackData = "${userOption.option.uuid}"
+                    )
+                )
+            }
         }
     }
 

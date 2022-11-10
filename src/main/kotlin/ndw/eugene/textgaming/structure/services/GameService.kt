@@ -12,21 +12,24 @@ class GameService(
 ) {
 
     fun initUserIfNotExists(userId: Long): GameMessage {
-        var userState = userService.getUserByIdOrNull(userId)
-
-        if (userState == null) {
-            userState = createNewUser(userId, Location.DOCKS)
-            conversationService.processConversation(userState)
-        }
+        //todo отдать инициацию юзера юзер сервису
+        val userState: UserState =
+            userService.getUserByIdOrNull(userId) ?: return initUserInLocation(userId, Location.DOCKS)
 
         return getGameMessage(userState)
     }
 
     fun initUserInLocation(userId: Long, location: Location): GameMessage {
+        //todo отдать инициацию юзера юзер сервису
         val userState = createNewUser(userId, location)
         conversationService.processConversation(userState)
 
         return getGameMessage(userState)
+    }
+
+    private fun createNewUser(userId: Long, startLocation: Location): UserState {
+        val conversationStartId = locationService.getLocationData(startLocation).startId
+        return userService.createUser(userId, conversationStartId, startLocation)
     }
 
     fun chooseOption(userId: Long, optionId: String): GameMessage {
@@ -36,11 +39,6 @@ class GameService(
         conversationService.processConversation(userState)
 
         return getGameMessage(userState)
-    }
-
-    private fun createNewUser(userId: Long, startLocation: Location): UserState {
-        val conversationStartId = locationService.locationsByName[startLocation]!!.startId
-        return userService.createUser(userId, conversationStartId, startLocation)
     }
 
     private fun getGameMessage(userState: UserState): GameMessage {
