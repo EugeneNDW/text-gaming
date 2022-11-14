@@ -159,7 +159,7 @@ private fun formatResponse(conversationPart: ConversationPart, options: List<Use
     }
 
     options.forEachIndexed { index, userOption ->
-        val text = "${index + 1} : ${userOption.option.optionText}"
+        val text = "${index + 1}. ${userOption.option.optionText}"
         val preparedText = prepareForMarkdown(text)
         result += if (!userOption.selected) {
             makeTextBold(preparedText)
