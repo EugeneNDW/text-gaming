@@ -60,34 +60,40 @@ class ConversationProcessors {
         processorsById["memorizeOfferHope"] = {
             choiceService.addChoice(it.userId, Choice.OFFER_HOPE)
         }
+        processorsById["memorizeHeardAboutFather"] = {
+            choiceService.addChoice(it.userId, Choice.HEARD_ABOUT_FATHER)
+        }
+        processorsById["memorizeLostName"] = {
+            choiceService.addChoice(it.userId, Choice.LOST_NAME)
+        }
+        processorsById["memorizeTidyYourself"] = {
+            choiceService.addChoice(it.userId, Choice.TIDY_YOURSELF)
+        }
+        processorsById["memorizeHeardMerchantStory"] = {
+            choiceService.addChoice(it.userId, Choice.MERCHANT_STORY)
+        }
+        processorsById["memorizeSadSong"] = {
+            choiceService.addChoice(it.userId, Choice.SAD_SONG)
+        }
+        processorsById["memorizeFunnySong"] = {
+            choiceService.addChoice(it.userId, Choice.FUNNY_SONG)
+        }
+        processorsById["memorizeEpicSong"] = {
+            choiceService.addChoice(it.userId, Choice.EPIC_SONG)
+        }
     }
 
     fun initOptionConditions() {
-        optionsById["marketChosen"] = {
-            choiceService.checkChoiceHasBeenMade(it.userId, Choice.GO_TO_MARKET)
-        }
-        optionsById["alleywayChosen"] = {
-            choiceService.checkChoiceHasBeenMade(it.userId, Choice.GO_TO_ALLEYWAYS)
-        }
-        optionsById["sadSongChosen"] = {
-            choiceService.checkChoiceHasBeenMade(it.userId, Choice.SAD_SONG)
-        }
-        optionsById["funnySongChosen"] = {
-            choiceService.checkChoiceHasBeenMade(it.userId, Choice.FUNNY_SONG)
-        }
-        optionsById["epicSongChosen"] = {
-            choiceService.checkChoiceHasBeenMade(it.userId, Choice.EPIC_SONG)
-        }
         optionsById["secondOptionChosen"] = {
             choiceService.checkChoiceHasBeenMade(it.userId, Choice.TEST)
         }
         optionsById["retellCompanionStoryCheck"] = {
             choiceService.checkChoiceHasBeenMade(it.userId, Choice.HEARD_COMPANION_STORY)
         }
-        optionsById["checkStartsTalking"] = {
+        optionsById["checkStarsTalking"] = {
             choiceService.checkChoiceHasBeenMade(it.userId, Choice.STARS_TALKING)
         }
-        optionsById["checkStartsSilent"] = {
+        optionsById["checkStarsSilent"] = {
             val starsTalking = choiceService.checkChoiceHasBeenMade(it.userId, Choice.STARS_TALKING)
             !starsTalking
         }
@@ -121,6 +127,43 @@ class ConversationProcessors {
         }
         optionsById["checkTonicWasBought"] = {
             choiceService.checkChoiceHasBeenMade(it.userId, Choice.BUY_TONIC)
+        }
+        optionsById["checkDidntHearAboutFather"] = {
+            !choiceService.checkChoiceHasBeenMade(it.userId, Choice.HEARD_ABOUT_FATHER)
+        }
+        optionsById["checkHeardAboutFather"] = {
+            choiceService.checkChoiceHasBeenMade(it.userId, Choice.HEARD_ABOUT_FATHER)
+        }
+        optionsById["checkTidyYourself"] = {
+            choiceService.checkChoiceHasBeenMade(it.userId, Choice.TIDY_YOURSELF)
+        }
+        optionsById["checkNotTidyYourself"] = {
+            !choiceService.checkChoiceHasBeenMade(it.userId, Choice.TIDY_YOURSELF)
+        }
+        optionsById["checkLostName"] = {
+            choiceService.checkChoiceHasBeenMade(it.userId, Choice.LOST_NAME)
+        }
+        optionsById["checkHaveName"] = {
+            !choiceService.checkChoiceHasBeenMade(it.userId, Choice.LOST_NAME)
+        }
+        optionsById["checkHeardSadSong"] = {
+            choiceService.checkChoiceHasBeenMade(it.userId, Choice.SAD_SONG)
+        }
+        optionsById["checkHeardEpicSong"] = {
+            choiceService.checkChoiceHasBeenMade(it.userId, Choice.EPIC_SONG)
+        }
+        optionsById["checkHeardFunnySong"] = {
+            choiceService.checkChoiceHasBeenMade(it.userId, Choice.FUNNY_SONG)
+        }
+        optionsById["checkHeardMerchantStory"] = {
+            choiceService.checkChoiceHasBeenMade(it.userId, Choice.MERCHANT_STORY)
+        }
+        optionsById["checkHaveNoStoryToTell"] = {
+            !choiceService.checkChoiceHasBeenMade(it.userId, Choice.MERCHANT_STORY)
+                    && !choiceService.checkChoiceHasBeenMade(it.userId, Choice.SAD_SONG)
+                    && !choiceService.checkChoiceHasBeenMade(it.userId, Choice.EPIC_SONG)
+                    && !choiceService.checkChoiceHasBeenMade(it.userId, Choice.FUNNY_SONG)
+                    && !choiceService.checkChoiceHasBeenMade(it.userId, Choice.HEARD_COMPANION_STORY)
         }
     }
 

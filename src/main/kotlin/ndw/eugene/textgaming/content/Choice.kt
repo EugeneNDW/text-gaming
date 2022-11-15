@@ -1,8 +1,6 @@
 package ndw.eugene.textgaming.content
 
 enum class Choice {
-    GO_TO_MARKET,
-    GO_TO_ALLEYWAYS,
     SAD_SONG,
     FUNNY_SONG,
     EPIC_SONG,
@@ -14,5 +12,9 @@ enum class Choice {
     OFFER_TRIBUTE,
     OFFER_HOPE,
     BUY_TONIC,
-    FIORE_APPEARED
+    FIORE_APPEARED,
+    HEARD_ABOUT_FATHER,
+    LOST_NAME,
+    TIDY_YOURSELF,
+    MERCHANT_STORY
 }
