@@ -2,16 +2,16 @@ package ndw.eugene.textgaming.content
 
 enum class GameCharacter {
     //main
-    PLAYER,
-    COMPANION,
+    YOU,
+    RENART,
     LOST_BOY,
-    ASTRONOMY_GIRL,
-    WIZARD,
+    ASTRONOMER,
+    HIGH_STARGAZER,
 
     //secondary
     MUSICIANS,
-    COFFEE_GIRL,
-    SELLER
+    COFFEE_SELLER,
+    MERCHANT
 }
 
 enum class Location {

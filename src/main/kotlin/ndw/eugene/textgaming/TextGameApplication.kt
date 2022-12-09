@@ -29,16 +29,26 @@ fun main() {
         logLevel = LogLevel.Network.Basic
         token = System.getenv("TOKEN")
         dispatch {
-
             command("start_in") {
+                if(!checkAuthorized(message)) {
+                    bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
+                    return@command
+                }
+
                 val location = Location.valueOf(args[0].uppercase())
                 val chatId = message.chat.id
+
                 val result = gameService.initUserInLocation(chatId, location)
 
                 sendGameMessage(bot, chatId, result)
             }
 
             command("start") {
+                if(!checkAuthorized(message)) {
+                    bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
+                    return@command
+                }
+
                 val chatId = message.chat.id
                 val result = gameService.initUserIfNotExists(chatId)
 
@@ -48,6 +58,11 @@ fun main() {
             callbackQuery {
                 val message = callbackQuery.message
                 val chatId = message?.chat?.id ?: return@callbackQuery
+                if(!checkAuthorized(message)) {
+                    bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
+                    return@callbackQuery
+                }
+
                 val result = gameService.chooseOption(chatId, callbackQuery.data)
 
                 editMessage(bot, message)
@@ -57,6 +72,12 @@ fun main() {
     }
 
     bot.startPolling()
+}
+fun checkAuthorized(message: Message): Boolean {
+    val allowedUsers = listOf(1L)
+
+    val userID = message.chat.id
+    return allowedUsers.contains(userID)
 }
 
 private fun removeButtons(bot: Bot, message: Message) {
@@ -146,7 +167,6 @@ private fun sendGameMessage(bot: Bot, chatId: Long, message: GameMessage) {
 }
 
 private fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
-    //todo учитывать пользовательские настройки когда они будут сделаны.
     var result = ""
     result += makeTextBold(prepareForMarkdown("${conversationPart.character}:")) + "\n" + prepareForMarkdown(
         conversationPart.text
