@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 import ndw.eugene.textgaming.content.Location
 
 @Serializable
-data class UserState(
-    val userId: Long,
+data class GameState(
+    val gameId: Long,
     var currentConversationId: Long,
     var location: Location,
 )

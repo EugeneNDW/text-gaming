@@ -2,48 +2,57 @@ package ndw.eugene.textgaming.structure.services
 
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.structure.data.GameMessage
-import ndw.eugene.textgaming.structure.data.UserState
+import ndw.eugene.textgaming.structure.data.GameState
 import java.util.*
 
 class GameService(
-    private val userService: UserService,
     private val locationService: LocationService,
     private val conversationService: ConversationService,
+    private val users: MutableMap<Long, MutableSet<GameState>> = mutableMapOf()
 ) {
+    private var counter = 0L
 
-    fun initUserIfNotExists(userId: Long): GameMessage {
-        //todo отдать инициацию юзера юзер сервису
-        val userState: UserState =
-            userService.getUserByIdOrNull(userId) ?: return initUserInLocation(userId, Location.DOCKS)
-
-        return getGameMessage(userState)
+    fun userHasGameStarted(userId: Long): Boolean {
+        return getUsersCurrentGame(userId) != null
     }
 
-    fun initUserInLocation(userId: Long, location: Location): GameMessage {
-        //todo отдать инициацию юзера юзер сервису
-        val userState = createNewUser(userId, location)
-        conversationService.processConversation(userState)
+    fun startNewGameForUser(userId: Long, location: Location = Location.DOCKS): GameMessage {
+        val game = createGameForUser(userId, location)
+        conversationService.processConversation(game)
 
-        return getGameMessage(userState)
-    }
-
-    private fun createNewUser(userId: Long, startLocation: Location): UserState {
-        val conversationStartId = locationService.getLocationData(startLocation).startId
-        return userService.createUser(userId, conversationStartId, startLocation)
+        return getGameMessage(game)
     }
 
     fun chooseOption(userId: Long, optionId: String): GameMessage {
-        val userState = userService.getUserById(userId)
+        val game = getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
         val optionUUID = UUID.fromString(optionId)
-        conversationService.progressConversation(userState, optionUUID)
-        conversationService.processConversation(userState)
 
-        return getGameMessage(userState)
+        conversationService.progressConversation(game, optionUUID)
+        conversationService.processConversation(game)
+
+        return getGameMessage(game)
     }
 
-    private fun getGameMessage(userState: UserState): GameMessage {
-        val conversationPart = conversationService.getCurrentConversation(userState)
-        val options = conversationService.getAvailableOptions(userState)
+    private fun createGameForUser(userId: Long, startLocation: Location): GameState {
+        val conversationStartId = locationService.getLocationData(startLocation).startId
+        val userGames = users.computeIfAbsent(userId) { mutableSetOf() }
+        val game = GameState(getGameId(), conversationStartId, startLocation)
+        userGames.add(game)
+
+        return game
+    }
+
+    private fun getUsersCurrentGame(userId: Long): GameState? {
+        return users[userId]?.maxBy { it.gameId } //game with max id is CURRENT GAME because game id generator is increment counter
+    }
+
+    private fun getGameId(): Long {
+        return counter++
+    }
+
+    private fun getGameMessage(gameState: GameState): GameMessage {
+        val conversationPart = conversationService.getCurrentConversation(gameState)
+        val options = conversationService.getAvailableOptions(gameState)
 
         return GameMessage(conversationPart, options)
     }

@@ -10,5 +10,5 @@ data class ConversationPart(
     val text: String,
     val processorId: String? = null,
     val illustration: String? = null,
-    var executable: (UserState) -> Unit = { }
+    var executable: (GameState) -> Unit = { }
 )

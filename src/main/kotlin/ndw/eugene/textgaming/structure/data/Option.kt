@@ -16,7 +16,7 @@ data class Option(
     val toId: Long,
     val optionText: String,
     val optionConditionId: String? = null,
-    var condition: (UserState) -> Boolean = { true }
+    var condition: (GameState) -> Boolean = { true }
 )
 
 data class UserOption(

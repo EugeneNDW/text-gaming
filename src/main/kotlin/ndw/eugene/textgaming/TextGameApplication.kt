@@ -37,8 +37,7 @@ fun main() {
 
                 val location = Location.valueOf(args[0].uppercase())
                 val chatId = message.chat.id
-
-                val result = gameService.initUserInLocation(chatId, location)
+                val result = gameService.startNewGameForUser(chatId, location)
 
                 sendGameMessage(bot, chatId, result)
             }
@@ -50,23 +49,48 @@ fun main() {
                 }
 
                 val chatId = message.chat.id
-                val result = gameService.initUserIfNotExists(chatId)
+                val responseMessage = if (gameService.userHasGameStarted(chatId)) {
+                    "У вас уже есть запущенная игра, прогресс в ней будет утерян. Перезапустить?"
+                } else {
+                    "Добро пожаловать, чтобы начать играть нажмите кнопку"
+                }
 
-                sendGameMessage(bot, chatId, result)
+                val startGameButton = createStartGameButton()
+                bot.sendMessage(
+                    chatId = ChatId.fromId(chatId),
+                    text = responseMessage,
+                    replyMarkup = startGameButton,
+                )
             }
 
             callbackQuery {
-                val message = callbackQuery.message
-                val chatId = message?.chat?.id ?: return@callbackQuery
-                if(!checkAuthorized(message)) {
-                    bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
-                    return@callbackQuery
+                if (callbackQuery.data != "START_GAME") {
+                    val message = callbackQuery.message
+                    val chatId = message?.chat?.id ?: return@callbackQuery
+                    if(!checkAuthorized(message)) {
+                        bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
+                        return@callbackQuery
+                    }
+
+                    val result = gameService.chooseOption(chatId, callbackQuery.data)
+
+                    editMessage(bot, message)
+                    sendGameMessage(bot, chatId, result)
                 }
+            }
 
-                val result = gameService.chooseOption(chatId, callbackQuery.data)
+            callbackQuery {
+                if (callbackQuery.data == "START_GAME") {
+                    val message = callbackQuery.message
+                    val chatId = message?.chat?.id ?: return@callbackQuery
+                    if(!checkAuthorized(message)) {
+                        bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
+                        return@callbackQuery
+                    }
 
-                editMessage(bot, message)
-                sendGameMessage(bot, chatId, result)
+                    val result = gameService.startNewGameForUser(chatId)
+                    sendGameMessage(bot, chatId, result)
+                }
             }
         }
     }
@@ -125,8 +149,6 @@ private fun initGameService(): GameService {
     val conversationProcessors = ConversationProcessors()
     val historyService = HistoryService()
     val choiceService = ChoiceService()
-    val userService = UserService()
-
     val conversationLoader = ConversationLoader(conversationProcessors)
     val locationService = LocationService(conversationLoader)
     val conversationService = ConversationService(historyService, locationService)
@@ -138,7 +160,7 @@ private fun initGameService(): GameService {
 
     locationService.initLocations()
 
-    return GameService(userService, locationService, conversationService)
+    return GameService(locationService, conversationService)
 }
 
 private fun sendGameMessage(bot: Bot, chatId: Long, message: GameMessage) {
@@ -222,6 +244,16 @@ private fun makeTextBold(text: String): String {
 
 private fun makeStrikeThrough(text: String): String {
     return "~$text~"
+}
+private fun createStartGameButton(): InlineKeyboardMarkup {
+    val buttons: MutableList<InlineKeyboardButton> = mutableListOf()
+
+    buttons.add(InlineKeyboardButton.CallbackData(
+        text = "start new game",
+        callbackData = "START_GAME"
+    ))
+
+    return InlineKeyboardMarkup.create(buttons)
 }
 
 private fun optionsToButtons(options: List<UserOption>): InlineKeyboardMarkup {
