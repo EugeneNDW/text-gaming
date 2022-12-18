@@ -26,8 +26,8 @@ fun main() {
     println("инициализировались и готовы принимать запросы")
 
     val bot = bot {
-        logLevel = LogLevel.Network.Basic
-        token = System.getenv("TOKEN")
+        logLevel = LogLevel.All()
+        token = System.getProperty("TOKEN")
         dispatch {
             command("start_in") {
                 if(!checkAuthorized(message)) {
@@ -98,7 +98,7 @@ fun main() {
     bot.startPolling()
 }
 fun checkAuthorized(message: Message): Boolean {
-    val allowedUsers = listOf(1L)
+    val allowedUsers = listOf(41809406L, 95263058L, 348613726L, 812483294L, 270698064L)
 
     val userID = message.chat.id
     return allowedUsers.contains(userID)
