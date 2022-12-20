@@ -2,7 +2,7 @@ package ndw.eugene.textgaming.structure.services
 
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.structure.data.LocationData
-import ndw.eugene.textgaming.utils.ConversationLoader
+import ndw.eugene.textgaming.loaders.ConversationLoader
 
 class LocationService(
     private val loader: ConversationLoader,

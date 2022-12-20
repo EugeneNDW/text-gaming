@@ -1,4 +1,4 @@
-package ndw.eugene.textgaming.utils
+package ndw.eugene.textgaming.loaders
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -8,20 +8,20 @@ import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.structure.data.ConversationPart
 import ndw.eugene.textgaming.structure.data.LocationData
 import ndw.eugene.textgaming.structure.data.Option
-import java.io.File
+import ndw.eugene.textgaming.walk
+import java.nio.file.Files
+import kotlin.io.path.name
 
 class ConversationLoader(private val conversationProcessors: ConversationProcessors) {
 
     fun loadLocations(): MutableMap<Location, LocationData> {
         val locations: MutableMap<Location, LocationData> = mutableMapOf()
 
-        val dir = File(
-            ConversationLoader::class.java.classLoader.getResource("conversations")?.file
-                ?: throw IllegalArgumentException("cant find folder with conversations")
-        )
+        val fileURL = ConversationLoader::class.java.classLoader.getResource("conversations")
+            ?: throw IllegalArgumentException("cant find conversations")
 
-        dir.walk().forEach { f ->
-            if (f.isFile) {
+        walk("conversations", fileURL)?.forEach { f ->
+            if (Files.isRegularFile(f)) {
                 val locationName = f.name.split(".")[0]
                 val conversation = loadConversation(locationName)
                 val location = Location.valueOf(locationName.uppercase())
