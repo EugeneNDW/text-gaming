@@ -113,29 +113,37 @@ private fun editText(text: String): String {
     )
 }
 
+
 private fun prepareForMarkdown(text: String): String {
-    var result = text.replace("_", "\\_")
+    val result = StringBuilder()
 
-    result = result.replace("*", "\\*")
-    result = result.replace("[", "\\[")
-    result = result.replace("]", "\\]")
-    result = result.replace("(", "\\(")
-    result = result.replace(")", "\\)")
-    result = result.replace("~", "\\~")
-    result = result.replace("`", "\\`")
-    result = result.replace(">", "\\>")
-    result = result.replace("#", "\\#")
-    result = result.replace("+", "\\+")
-    result = result.replace("-", "\\-")
-    result = result.replace("=", "\\=")
-    result = result.replace("|", "\\|")
-    result = result.replace("{", "\\{")
-    result = result.replace("}", "\\}")
-    result = result.replace(".", "\\.")
-    result = result.replace("!", "\\!")
+    for (c in text) {
+        when (c) {
+            '*' -> result.append("\\*")
+            '_' -> result.append("\\_")
+            '[' -> result.append("\\[")
+            ']' -> result.append("\\]")
+            '(' -> result.append("\\(")
+            ')' -> result.append("\\)")
+            '#' -> result.append("\\#")
+            '~' -> result.append("\\~")
+            '`' -> result.append("\\`")
+            '>' -> result.append("\\>")
+            '+' -> result.append("\\+")
+            '-' -> result.append("\\-")
+            '=' -> result.append("\\=")
+            '|' -> result.append("\\|")
+            '{' -> result.append("\\{")
+            '}' -> result.append("\\}")
+            '.' -> result.append("\\.")
+            '!' -> result.append("\\!")
+            else -> result.append(c)
+        }
+    }
 
-    return result
+    return result.toString()
 }
+
 
 private fun makeTextBold(text: String): String {
     return "*$text*"
