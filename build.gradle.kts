@@ -21,6 +21,9 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
 	implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7")
+
+	implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
+	implementation("ch.qos.logback:logback-classic:1.4.5")
 }
 
 tasks.withType<KotlinCompile> {

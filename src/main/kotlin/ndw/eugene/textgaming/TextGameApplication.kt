@@ -10,18 +10,21 @@ import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.TelegramFile
 import com.github.kotlintelegrambot.logging.LogLevel
+import mu.KotlinLogging
 import ndw.eugene.textgaming.content.ConversationProcessors
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.structure.data.GameMessage
 import ndw.eugene.textgaming.structure.services.*
 import ndw.eugene.textgaming.loaders.ConversationLoader
 
+private val logger = KotlinLogging.logger {}
+
 class TextGameApplication
 
 fun main() {
-    println("запустились")
+    logger.info { "started" }
     val gameService = initGameService()
-    println("инициализировались и готовы принимать запросы")
+    logger.info { "initialized and ready to serve" }
 
     val bot = bot {
         logLevel = LogLevel.All()
