@@ -5,6 +5,7 @@ import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.callbackQuery
 import com.github.kotlintelegrambot.dispatcher.command
+import com.github.kotlintelegrambot.dispatcher.message
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.ParseMode
@@ -22,14 +23,17 @@ private val logger = KotlinLogging.logger {}
 class TextGameApplication
 
 fun main() {
-    logger.info { "started" }
     val gameService = initGameService()
-    logger.info { "initialized and ready to serve" }
+    logger.info { "game initialized and ready to serve" }
 
     val bot = bot {
         logLevel = LogLevel.All()
         token = System.getProperty("TOKEN")
         dispatch {
+            message {
+                logger.info { "update received: $update" }
+            }
+
             command("start_in") {
                 if (!checkAuthorized(message)) {
                     bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")

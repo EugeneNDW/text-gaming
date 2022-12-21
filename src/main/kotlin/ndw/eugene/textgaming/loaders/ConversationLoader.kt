@@ -3,6 +3,7 @@ package ndw.eugene.textgaming.loaders
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import mu.KotlinLogging
 import ndw.eugene.textgaming.content.ConversationProcessors
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.structure.data.ConversationPart
@@ -12,9 +13,12 @@ import ndw.eugene.textgaming.walk
 import java.nio.file.Files
 import kotlin.io.path.name
 
+private val logger = KotlinLogging.logger {}
+
 class ConversationLoader(private val conversationProcessors: ConversationProcessors) {
 
     fun loadLocations(): MutableMap<Location, LocationData> {
+        logger.info { "start loading conversations" }
         val locations: MutableMap<Location, LocationData> = mutableMapOf()
 
         val fileURL = ConversationLoader::class.java.classLoader.getResource("conversations")
@@ -22,6 +26,7 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
 
         walk("conversations", fileURL)?.forEach { f ->
             if (Files.isRegularFile(f)) {
+                logger.info { "start loading conversation ${f.name}" }
                 val locationName = f.name.split(".")[0]
                 val conversation = loadConversation(locationName)
                 val location = Location.valueOf(locationName.uppercase())
@@ -29,9 +34,11 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
                 val locationData = buildLocationData(conversation, location)
 
                 locations[location] = locationData
+                logger.info { "conversation ${f.name} was loaded" }
             }
         }
 
+        logger.info { "all conversations were loaded" }
         return locations
     }
 
