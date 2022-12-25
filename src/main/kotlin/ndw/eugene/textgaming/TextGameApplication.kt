@@ -127,7 +127,7 @@ private fun sendGameMessage(bot: Bot, chatId: Long, message: GameMessage) {
     val formatResponse = formatResponse(message.currentConversation, availableOptions)
     val illustration = message.currentConversation.illustration
 
-    if (illustration != null) {
+    if (illustration != null && illustration.isNotBlank()) {
         bot.sendPhoto(
             chatId = ChatId.fromId(chatId),
             photo = TelegramFile.ByByteArray(readBytesFromFile(illustration), illustration),

@@ -84,6 +84,14 @@ class ConversationProcessors {
     }
 
     fun initOptionConditions() {
+        optionsById["testCondition"] = {
+            true
+        }
+
+        optionsById["testNotCondition"] = {
+            false
+        }
+
         optionsById["secondOptionChosen"] = {
             choiceService.checkChoiceHasBeenMade(it.gameId, Choice.TEST)
         }

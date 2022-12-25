@@ -45,7 +45,7 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
     private fun buildLocationData(conversation: Conversation, location: Location): LocationData {
         val convById = mutableMapOf<Long, ConversationPart>()
         conversation.conversationParts.forEach {
-            if (it.processorId != null) {
+            if (it.processorId != null && it.processorId.isNotBlank()) {
                 it.executable = conversationProcessors.getProcessorById(it.processorId)
             }
             convById[it.id] = it
@@ -56,7 +56,7 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
             val options = convToOption.getOrPut(it.fromId) {
                 mutableListOf()
             }
-            if (it.optionConditionId != null) {
+            if (it.optionConditionId != null && it.optionConditionId.isNotBlank()) {
                 it.condition = conversationProcessors.getOptionConditionById(it.optionConditionId)
             }
             options.add(it)
