@@ -1,16 +1,23 @@
 package ndw.eugene.textgaming.structure.services
 
 import ndw.eugene.textgaming.content.Location
+import ndw.eugene.textgaming.structure.data.GameState
 import ndw.eugene.textgaming.structure.data.LocationData
-import ndw.eugene.textgaming.loaders.ConversationLoader
+import org.springframework.stereotype.Service
 
-class LocationService(
-    private val loader: ConversationLoader,
-) {
+@Service
+class LocationService {
     private var locationsByName: MutableMap<Location, LocationData> = mutableMapOf()
 
-    fun initLocations() {
-        locationsByName = loader.loadLocations()
+    fun initLocationService(locationsByName: MutableMap<Location, LocationData>) {
+        this.locationsByName = locationsByName
+    }
+
+    fun changeLocationTo(gameState: GameState, location: Location) {
+        val locationData = getLocationData(location)
+        gameState.location = locationData.location
+        gameState.currentConversationId = locationData.startId
+        println("${gameState.location} : ${gameState.currentConversationId}")
     }
 
     fun getLocationData(location: Location): LocationData {

@@ -1,7 +1,9 @@
 package ndw.eugene.textgaming.structure.services
 
+import org.springframework.stereotype.Service
 import java.util.*
 
+@Service
 class HistoryService {
     private val historyTracker = mutableMapOf<Long, MutableSet<UUID>>() //todo положить в базу
 

@@ -1,40 +1,46 @@
 package ndw.eugene.textgaming.content
 
-import ndw.eugene.textgaming.structure.services.ChoiceService
-import ndw.eugene.textgaming.structure.data.LocationData
 import ndw.eugene.textgaming.structure.data.GameState
+import ndw.eugene.textgaming.structure.services.ChoiceService
 import ndw.eugene.textgaming.structure.services.LocationService
+import org.springframework.stereotype.Component
 
 typealias ConversationProcessor = (GameState) -> Unit
 typealias OptionCondition = (GameState) -> Boolean
 
-class ConversationProcessors {
+@Component
+class ConversationProcessors(
+    private val choiceService: ChoiceService,
+    private val locationService: LocationService
+) {
     private val processorsById = mutableMapOf<String, ConversationProcessor>()
     private val optionsById = mutableMapOf<String, OptionCondition>()
 
-    lateinit var locationService: LocationService
-    lateinit var choiceService: ChoiceService
+    init {
+        initProcessors()
+        initOptionConditions()
+    }
 
-    fun initProcessors() {
+    fun getOptionConditionById(id: String): OptionCondition {
+        return optionsById[id] ?: throw IllegalArgumentException("there is no option with id: $id")
+    }
+
+    fun getProcessorById(id: String): ConversationProcessor {
+        return processorsById[id] ?: throw IllegalArgumentException("there is no processor with id: $id")
+    }
+
+    private fun initProcessors() {
         processorsById["changeLocationToAlleyways"] = {
-            val location = locationService.getLocationData(Location.ALLEYWAYS)
-            changeLocationTo(it, location)
-            println("${it.location} : ${it.currentConversationId}")
+            locationService.changeLocationTo(it, Location.ALLEYWAYS)
         }
         processorsById["changeLocationToMarket"] = {
-            val location = locationService.getLocationData(Location.MARKET)
-            changeLocationTo(it, location)
-            println("${it.location} : ${it.currentConversationId}")
+            locationService.changeLocationTo(it, Location.MARKET)
         }
         processorsById["changeLocationToTower"] = {
-            val location = locationService.getLocationData(Location.TOWER)
-            changeLocationTo(it, location)
-            println("${it.location} : ${it.currentConversationId}")
+            locationService.changeLocationTo(it, Location.TOWER)
         }
         processorsById["changeLocationToDome"] = {
-            val location = locationService.getLocationData(Location.DOME)
-            changeLocationTo(it, location)
-            println("${it.location} : ${it.currentConversationId}")
+            locationService.changeLocationTo(it, Location.DOME)
         }
         processorsById["memorizeFioreAppeared"] = {
             choiceService.addChoice(it.gameId, Choice.FIORE_APPEARED)
@@ -83,7 +89,7 @@ class ConversationProcessors {
         }
     }
 
-    fun initOptionConditions() {
+    private fun initOptionConditions() {
         optionsById["testCondition"] = {
             true
         }
@@ -174,17 +180,4 @@ class ConversationProcessors {
                     && !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.HEARD_COMPANION_STORY)
         }
     }
-
-    fun getOptionConditionById(id: String): OptionCondition {
-        return optionsById[id] ?: throw IllegalArgumentException("there is no option with id: $id")
-    }
-
-    fun getProcessorById(id: String): ConversationProcessor {
-        return processorsById[id] ?: throw IllegalArgumentException("there is no processor with id: $id")
-    }
-}
-
-private fun changeLocationTo(gameState: GameState, location: LocationData) {
-    gameState.location = location.location
-    gameState.currentConversationId = location.startId
 }

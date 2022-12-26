@@ -1,16 +1,27 @@
 package ndw.eugene.textgaming.structure.services
 
+import jakarta.annotation.PostConstruct
 import ndw.eugene.textgaming.content.Location
+import ndw.eugene.textgaming.loaders.ConversationLoader
 import ndw.eugene.textgaming.structure.data.GameMessage
 import ndw.eugene.textgaming.structure.data.GameState
+import org.springframework.stereotype.Service
 import java.util.*
 
+@Service
 class GameService(
     private val locationService: LocationService,
     private val conversationService: ConversationService,
+    private val conversationLoader: ConversationLoader,
     private val users: MutableMap<Long, MutableSet<GameState>> = mutableMapOf()
 ) {
     private var counter = 0L
+
+    @PostConstruct
+    fun initGameService() {
+        val locations = conversationLoader.loadLocations()
+        locationService.initLocationService(locations)
+    }
 
     fun userHasGameStarted(userId: Long): Boolean {
         return getUsersCurrentGame(userId) != null

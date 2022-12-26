@@ -1,7 +1,9 @@
 package ndw.eugene.textgaming.structure.services
 
 import ndw.eugene.textgaming.content.Choice
+import org.springframework.stereotype.Service
 
+@Service
 class ChoiceService {
     private val gameToChoices: MutableMap<Long, MutableSet<Choice>> = mutableMapOf()
 

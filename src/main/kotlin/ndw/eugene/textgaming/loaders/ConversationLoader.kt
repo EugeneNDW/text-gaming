@@ -10,11 +10,13 @@ import ndw.eugene.textgaming.structure.data.ConversationPart
 import ndw.eugene.textgaming.structure.data.LocationData
 import ndw.eugene.textgaming.structure.data.Option
 import ndw.eugene.textgaming.walk
+import org.springframework.stereotype.Component
 import java.nio.file.Files
 import kotlin.io.path.name
 
 private val logger = KotlinLogging.logger {}
 
+@Component
 class ConversationLoader(private val conversationProcessors: ConversationProcessors) {
 
     fun loadLocations(): MutableMap<Location, LocationData> {

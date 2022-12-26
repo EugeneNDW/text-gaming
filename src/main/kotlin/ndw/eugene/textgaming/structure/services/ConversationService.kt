@@ -4,8 +4,10 @@ import ndw.eugene.textgaming.structure.data.ConversationPart
 import ndw.eugene.textgaming.structure.data.Option
 import ndw.eugene.textgaming.structure.data.UserOption
 import ndw.eugene.textgaming.structure.data.GameState
+import org.springframework.stereotype.Service
 import java.util.UUID
 
+@Service
 class ConversationService(
     private val historyService: HistoryService,
     private val locationService: LocationService
