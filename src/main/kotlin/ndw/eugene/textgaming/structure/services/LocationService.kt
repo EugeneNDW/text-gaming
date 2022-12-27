@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class LocationService {
-    private var locationsByName: MutableMap<Location, LocationData> = mutableMapOf()
+    private var locationsByName: Map<Location, LocationData> = mutableMapOf()
 
-    fun initLocationService(locationsByName: MutableMap<Location, LocationData>) {
+    fun initLocationService(locationsByName: Map<Location, LocationData>) {
         this.locationsByName = locationsByName
     }
 

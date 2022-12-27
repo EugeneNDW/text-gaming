@@ -9,39 +9,39 @@ import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.structure.data.ConversationPart
 import ndw.eugene.textgaming.structure.data.LocationData
 import ndw.eugene.textgaming.structure.data.Option
-import ndw.eugene.textgaming.walk
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.Resource
 import org.springframework.stereotype.Component
-import java.nio.file.Files
-import kotlin.io.path.name
+import org.springframework.util.FileCopyUtils
+import java.io.InputStreamReader
+import java.util.Arrays
+import java.util.stream.Collectors.toList
 
 private val logger = KotlinLogging.logger {}
 
 @Component
 class ConversationLoader(private val conversationProcessors: ConversationProcessors) {
 
-    fun loadLocations(): MutableMap<Location, LocationData> {
+    @Value("classpath:conversations/*.json")
+    lateinit var resources: Array<Resource>
+
+    fun loadLocations(): Map<Location, LocationData> {
         logger.info { "start loading conversations" }
-        val locations: MutableMap<Location, LocationData> = mutableMapOf()
 
-        val fileURL = ConversationLoader::class.java.classLoader.getResource("conversations")
-            ?: throw IllegalArgumentException("cant find conversations")
-
-        walk("conversations", fileURL)?.forEach { f ->
-            if (Files.isRegularFile(f)) {
-                logger.info { "start loading conversation ${f.name}" }
-                val locationName = f.name.split(".")[0]
-                val conversation = loadConversation(locationName)
+        return Arrays
+            .stream(resources)
+            .map { r ->
+                val locationName = r.filename?.split(".")?.get(0) ?: throw IllegalArgumentException()
                 val location = Location.valueOf(locationName.uppercase())
+                val text = InputStreamReader(r.inputStream, "UTF-8").use {
+                    FileCopyUtils.copyToString(it)
+                }
+                val conversation = Json.decodeFromString<Conversation>(text)
 
-                val locationData = buildLocationData(conversation, location)
-
-                locations[location] = locationData
-                logger.info { "conversation ${f.name} was loaded" }
+                buildLocationData(conversation, location)
             }
-        }
-
-        logger.info { "all conversations were loaded" }
-        return locations
+            .collect(toList())
+            .associateBy({ it.location }, { it })
     }
 
     private fun buildLocationData(conversation: Conversation, location: Location): LocationData {
@@ -70,13 +70,6 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
             convById,
             convToOption
         )
-    }
-
-    private fun loadConversation(locationName: String): Conversation {
-        val text =
-            ConversationLoader::class.java.classLoader.getResource("conversations/$locationName.json")?.readText()
-
-        return Json.decodeFromString(text ?: "")
     }
 }
 
