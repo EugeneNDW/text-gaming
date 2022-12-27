@@ -28,9 +28,10 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
     fun loadLocations(): Map<Location, LocationData> {
         logger.info { "start loading conversations" }
 
-        return Arrays
+        val result = Arrays
             .stream(resources)
             .map { r ->
+                logger.info { "start loading ${r.filename}" }
                 val locationName = r.filename?.split(".")?.get(0) ?: throw IllegalArgumentException()
                 val location = Location.valueOf(locationName.uppercase())
                 val text = InputStreamReader(r.inputStream, "UTF-8").use {
@@ -38,10 +39,15 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
                 }
                 val conversation = Json.decodeFromString<Conversation>(text)
 
-                buildLocationData(conversation, location)
+                val locationData = buildLocationData(conversation, location)
+                logger.info { "${r.filename} was loaded" }
+                locationData
             }
             .collect(toList())
             .associateBy({ it.location }, { it })
+
+        logger.info { "all conversations were loaded" }
+        return result
     }
 
     private fun buildLocationData(conversation: Conversation, location: Location): LocationData {
