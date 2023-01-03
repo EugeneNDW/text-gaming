@@ -6,7 +6,8 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.util.*
+import ndw.eugene.textgaming.content.OptionCondition
+import java.util.UUID
 
 @Serializable
 data class Option(
@@ -16,7 +17,7 @@ data class Option(
     val toId: Long,
     val optionText: String,
     val optionConditionId: String? = null,
-    var condition: (GameState) -> Boolean = { true }
+    var condition: OptionCondition = { true }
 )
 
 data class UserOption(

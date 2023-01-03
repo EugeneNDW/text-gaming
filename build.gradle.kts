@@ -6,6 +6,7 @@ plugins {
 	kotlin("jvm") version "1.7.22"
 	kotlin("plugin.serialization") version "1.7.22"
 	kotlin("plugin.spring") version "1.7.22"
+	kotlin("plugin.jpa") version "1.7.21"
 }
 
 group = "ndw.eugene"
@@ -19,15 +20,16 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
-
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-
 	implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7")
-
 	implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
 	implementation("ch.qos.logback:logback-classic:1.4.5")
+	implementation ("org.flywaydb:flyway-core")
+
+	runtimeOnly("org.postgresql:postgresql")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

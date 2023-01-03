@@ -125,7 +125,7 @@ class TextGameBotConfiguration {
     }
 
     private fun checkAuthorized(message: Message): Boolean {
-        val allowedUsers = listOf(41809406L, 95263058L, 348613726L, 812483294L, 270698064L)
+        val allowedUsers = listOf(95263058L)
 
         val userID = message.chat.id
         return allowedUsers.contains(userID)

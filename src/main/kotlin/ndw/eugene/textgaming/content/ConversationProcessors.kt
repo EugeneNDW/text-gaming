@@ -1,6 +1,6 @@
 package ndw.eugene.textgaming.content
 
-import ndw.eugene.textgaming.structure.data.GameState
+import ndw.eugene.textgaming.structure.data.entity.GameState
 import ndw.eugene.textgaming.structure.services.ChoiceService
 import ndw.eugene.textgaming.structure.services.LocationService
 import org.springframework.stereotype.Component
@@ -43,49 +43,49 @@ class ConversationProcessors(
             locationService.changeLocationTo(it, Location.DOME)
         }
         processorsById["memorizeFioreAppeared"] = {
-            choiceService.addChoice(it.gameId, Choice.FIORE_APPEARED)
+            choiceService.addChoice(it, Choice.FIORE_APPEARED)
         }
         processorsById["memorizeTonicBought"] = {
-            choiceService.addChoice(it.gameId, Choice.BUY_TONIC)
+            choiceService.addChoice(it, Choice.BUY_TONIC)
         }
         processorsById["memorizeCompanionStory"] = {
-            choiceService.addChoice(it.gameId, Choice.HEARD_COMPANION_STORY)
+            choiceService.addChoice(it, Choice.HEARD_COMPANION_STORY)
         }
         processorsById["memorizeStarsTalking"] = {
-            choiceService.addChoice(it.gameId, Choice.STARS_TALKING)
+            choiceService.addChoice(it, Choice.STARS_TALKING)
         }
         processorsById["testProcessor"] = {
-            choiceService.addChoice(it.gameId, Choice.TEST)
+            choiceService.addChoice(it, Choice.TEST)
         }
         processorsById["memorizeOfferSolace"] = {
-            choiceService.addChoice(it.gameId, Choice.OFFER_SOLACE)
+            choiceService.addChoice(it, Choice.OFFER_SOLACE)
         }
         processorsById["memorizeOfferTribute"] = {
-            choiceService.addChoice(it.gameId, Choice.OFFER_TRIBUTE)
+            choiceService.addChoice(it, Choice.OFFER_TRIBUTE)
         }
         processorsById["memorizeOfferHope"] = {
-            choiceService.addChoice(it.gameId, Choice.OFFER_HOPE)
+            choiceService.addChoice(it, Choice.OFFER_HOPE)
         }
         processorsById["memorizeHeardAboutFather"] = {
-            choiceService.addChoice(it.gameId, Choice.HEARD_ABOUT_FATHER)
+            choiceService.addChoice(it, Choice.HEARD_ABOUT_FATHER)
         }
         processorsById["memorizeLostName"] = {
-            choiceService.addChoice(it.gameId, Choice.LOST_NAME)
+            choiceService.addChoice(it, Choice.LOST_NAME)
         }
         processorsById["memorizeTidyYourself"] = {
-            choiceService.addChoice(it.gameId, Choice.TIDY_YOURSELF)
+            choiceService.addChoice(it, Choice.TIDY_YOURSELF)
         }
         processorsById["memorizeHeardMerchantStory"] = {
-            choiceService.addChoice(it.gameId, Choice.MERCHANT_STORY)
+            choiceService.addChoice(it, Choice.MERCHANT_STORY)
         }
         processorsById["memorizeSadSong"] = {
-            choiceService.addChoice(it.gameId, Choice.SAD_SONG)
+            choiceService.addChoice(it, Choice.SAD_SONG)
         }
         processorsById["memorizeFunnySong"] = {
-            choiceService.addChoice(it.gameId, Choice.FUNNY_SONG)
+            choiceService.addChoice(it, Choice.FUNNY_SONG)
         }
         processorsById["memorizeEpicSong"] = {
-            choiceService.addChoice(it.gameId, Choice.EPIC_SONG)
+            choiceService.addChoice(it, Choice.EPIC_SONG)
         }
     }
 
@@ -99,27 +99,27 @@ class ConversationProcessors(
         }
 
         optionsById["secondOptionChosen"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.TEST)
+            choiceService.checkChoiceHasBeenMade(it, Choice.TEST)
         }
         optionsById["retellCompanionStoryCheck"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.HEARD_COMPANION_STORY)
+            choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_COMPANION_STORY)
         }
         optionsById["checkStarsTalking"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.STARS_TALKING)
+            choiceService.checkChoiceHasBeenMade(it, Choice.STARS_TALKING)
         }
         optionsById["checkStarsSilent"] = {
-            val starsTalking = choiceService.checkChoiceHasBeenMade(it.gameId, Choice.STARS_TALKING)
+            val starsTalking = choiceService.checkChoiceHasBeenMade(it, Choice.STARS_TALKING)
             !starsTalking
         }
         optionsById["checkOutOfOffers"] = {
             val isOutOfOffers = choiceService.checkChoiceHasBeenMade(
-                it.gameId,
+                it,
                 Choice.OFFER_SOLACE
             ) && choiceService.checkChoiceHasBeenMade(
-                it.gameId,
+                it,
                 Choice.OFFER_TRIBUTE
             ) && choiceService.checkChoiceHasBeenMade(
-                it.gameId,
+                it,
                 Choice.OFFER_HOPE
             )
 
@@ -127,57 +127,57 @@ class ConversationProcessors(
         }
         optionsById["checkStillHaveOffers"] = {
             val isOutOfOffers = choiceService.checkChoiceHasBeenMade(
-                it.gameId,
+                it,
                 Choice.OFFER_SOLACE
             ) && choiceService.checkChoiceHasBeenMade(
-                it.gameId,
+                it,
                 Choice.OFFER_TRIBUTE
             ) && choiceService.checkChoiceHasBeenMade(
-                it.gameId,
+                it,
                 Choice.OFFER_HOPE
             )
 
             !isOutOfOffers
         }
         optionsById["checkTonicWasBought"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.BUY_TONIC)
+            choiceService.checkChoiceHasBeenMade(it, Choice.BUY_TONIC)
         }
         optionsById["checkDidntHearAboutFather"] = {
-            !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.HEARD_ABOUT_FATHER)
+            !choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_ABOUT_FATHER)
         }
         optionsById["checkHeardAboutFather"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.HEARD_ABOUT_FATHER)
+            choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_ABOUT_FATHER)
         }
         optionsById["checkTidyYourself"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.TIDY_YOURSELF)
+            choiceService.checkChoiceHasBeenMade(it, Choice.TIDY_YOURSELF)
         }
         optionsById["checkNotTidyYourself"] = {
-            !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.TIDY_YOURSELF)
+            !choiceService.checkChoiceHasBeenMade(it, Choice.TIDY_YOURSELF)
         }
         optionsById["checkLostName"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.LOST_NAME)
+            choiceService.checkChoiceHasBeenMade(it, Choice.LOST_NAME)
         }
         optionsById["checkHaveName"] = {
-            !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.LOST_NAME)
+            !choiceService.checkChoiceHasBeenMade(it, Choice.LOST_NAME)
         }
         optionsById["checkHeardSadSong"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.SAD_SONG)
+            choiceService.checkChoiceHasBeenMade(it, Choice.SAD_SONG)
         }
         optionsById["checkHeardEpicSong"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.EPIC_SONG)
+            choiceService.checkChoiceHasBeenMade(it, Choice.EPIC_SONG)
         }
         optionsById["checkHeardFunnySong"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.FUNNY_SONG)
+            choiceService.checkChoiceHasBeenMade(it, Choice.FUNNY_SONG)
         }
         optionsById["checkHeardMerchantStory"] = {
-            choiceService.checkChoiceHasBeenMade(it.gameId, Choice.MERCHANT_STORY)
+            choiceService.checkChoiceHasBeenMade(it, Choice.MERCHANT_STORY)
         }
         optionsById["checkHaveNoStoryToTell"] = {
-            !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.MERCHANT_STORY)
-                    && !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.SAD_SONG)
-                    && !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.EPIC_SONG)
-                    && !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.FUNNY_SONG)
-                    && !choiceService.checkChoiceHasBeenMade(it.gameId, Choice.HEARD_COMPANION_STORY)
+            !choiceService.checkChoiceHasBeenMade(it, Choice.MERCHANT_STORY)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.SAD_SONG)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.EPIC_SONG)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.FUNNY_SONG)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_COMPANION_STORY)
         }
     }
 }
