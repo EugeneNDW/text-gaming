@@ -11,7 +11,9 @@ enum class GameCharacter {
     //secondary
     MUSICIANS,
     COFFEE_SELLER,
-    MERCHANT
+    MERCHANT,
+    SAILOR,
+    CAPTAIN,
 }
 
 enum class Location {
@@ -20,5 +22,6 @@ enum class Location {
     MARKET,
     TOWER,
     DOME,
+    SHIP,
     TEST,
 }

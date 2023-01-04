@@ -30,6 +30,15 @@ class ConversationProcessors(
     }
 
     private fun initProcessors() {
+        processorsById["changeLocationToStorm"] = {
+            println("change location to storm") //todo make real location change when ready
+        }
+        processorsById["changeLocationToSunkenLibrary"] = {
+            println("change location to sunken library") //todo make real location change when ready
+        }
+        processorsById["changeLocationToShip"] = {
+            locationService.changeLocationTo(it, Location.SHIP)
+        }
         processorsById["changeLocationToAlleyways"] = {
             locationService.changeLocationTo(it, Location.ALLEYWAYS)
         }
