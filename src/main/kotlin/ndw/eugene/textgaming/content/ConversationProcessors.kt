@@ -30,8 +30,11 @@ class ConversationProcessors(
     }
 
     private fun initProcessors() {
+        processorsById["changeLocationToJungle"] = {
+            println("change location to jungle") //todo make real location change when ready
+        }
         processorsById["changeLocationToStorm"] = {
-            println("change location to storm") //todo make real location change when ready
+            locationService.changeLocationTo(it, Location.STORM)
         }
         processorsById["changeLocationToSunkenLibrary"] = {
             println("change location to sunken library") //todo make real location change when ready

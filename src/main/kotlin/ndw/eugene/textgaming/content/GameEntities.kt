@@ -23,5 +23,6 @@ enum class Location {
     TOWER,
     DOME,
     SHIP,
+    STORM,
     TEST,
 }
