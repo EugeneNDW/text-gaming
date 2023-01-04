@@ -25,4 +25,5 @@ enum class Location {
     SHIP,
     STORM,
     TEST,
+    SUNKEN_LIBRARY_SHORE
 }

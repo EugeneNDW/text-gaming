@@ -37,7 +37,7 @@ class ConversationProcessors(
             locationService.changeLocationTo(it, Location.STORM)
         }
         processorsById["changeLocationToSunkenLibrary"] = {
-            println("change location to sunken library") //todo make real location change when ready
+            locationService.changeLocationTo(it, Location.SUNKEN_LIBRARY_SHORE)
         }
         processorsById["changeLocationToShip"] = {
             locationService.changeLocationTo(it, Location.SHIP)
@@ -98,6 +98,12 @@ class ConversationProcessors(
         }
         processorsById["memorizeEpicSong"] = {
             choiceService.addChoice(it, Choice.EPIC_SONG)
+        }
+        processorsById["memorizeResearch"] = {
+            choiceService.addChoice(it, Choice.RESEARCH)
+        }
+        processorsById["memorizeWhatHappenedToTheLibrary"] = {
+            choiceService.addChoice(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
         }
     }
 
@@ -190,6 +196,9 @@ class ConversationProcessors(
                 && !choiceService.checkChoiceHasBeenMade(it, Choice.EPIC_SONG)
                 && !choiceService.checkChoiceHasBeenMade(it, Choice.FUNNY_SONG)
                 && !choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_COMPANION_STORY)
+        }
+        optionsById["checkAskedAboutResearch"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.RESEARCH)
         }
     }
 }
