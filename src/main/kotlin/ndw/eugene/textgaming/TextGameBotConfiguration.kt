@@ -15,6 +15,7 @@ import mu.KotlinLogging
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.structure.data.GameMessage
 import ndw.eugene.textgaming.structure.services.*
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -24,10 +25,11 @@ private val logger = KotlinLogging.logger {}
 class TextGameBotConfiguration {
 
     @Bean
-    fun getBot(gameService: GameService): Bot {
+    fun getBot(
+        @Value("\${application.bot.token}") botToken: String, gameService: GameService): Bot {
         return bot {
             logLevel = LogLevel.All()
-            token = System.getProperty("TOKEN")
+            token = botToken
             dispatch {
                 message {
                     logger.info { "update received: $update" }

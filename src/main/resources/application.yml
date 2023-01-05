@@ -1,12 +1,15 @@
+application:
+  bot.token: "${TOKEN}"
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:49153/postgres
-    username: postgres
-    password: postgrespw
+    url: "${DATABASE_URL}"
+    username: "${DATABASE_USERNAME}"
+    password: "${DATABASE_PASSWORD}"
     driverClassName: org.postgresql.Driver
   jpa:
     spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+
 flyway:
-  url: jdbc:postgresql://localhost:49153/postgres
-  username: postgres
-  password: postgrespw
+  url: "${DATABASE_URL}"
+  username: "${DATABASE_USERNAME}"
+  password: "${DATABASE_PASSWORD}"
