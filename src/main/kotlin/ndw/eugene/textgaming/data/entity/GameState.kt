@@ -16,7 +16,7 @@ import ndw.eugene.textgaming.content.Location
 
 @Entity
 @Table(name = "game_state")
-@Serializable
+@Serializable //todo подумать как убрать, нужно потому что является частью ConversationProcessor'а
 class GameState {
 
     @Id

@@ -25,13 +25,20 @@ private val logger = KotlinLogging.logger {}
 class TextGameBotConfiguration {
     @Bean
     fun getBot(
-        @Value("\${application.bot.token}") botToken: String, gameService: GameService
+        @Value("\${application.bot.token}") botToken: String,
+        @Value("\${application.bot.loglevel}") botLogLevel: String,
+        gameService: GameService
     ): Bot {
         return bot {
-            logLevel = LogLevel.All()
+            logLevel = decideLogLevel(botLogLevel)
             token = botToken
+
             dispatch {
                 message {
+                    logger.info { "update received: $update" }
+                }
+
+                callbackQuery {
                     logger.info { "update received: $update" }
                 }
 
@@ -133,4 +140,12 @@ class TextGameBotConfiguration {
         return allowedUsers.contains(userID)
     }
 
+    private fun decideLogLevel(logLevel: String): LogLevel {
+        return when(logLevel) {
+            "none" -> LogLevel.None
+            else -> {
+                LogLevel.All()
+            }
+        }
+    }
 }

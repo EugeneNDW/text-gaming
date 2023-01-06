@@ -38,3 +38,4 @@ out/
 
 src/main/resources/conversations
 src/main/resources/.env
+/logs/

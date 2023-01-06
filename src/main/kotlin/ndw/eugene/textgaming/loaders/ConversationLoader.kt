@@ -51,6 +51,7 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
     }
 
     private fun buildLocationData(conversation: Conversation, location: Location): LocationData {
+        logger.info { "building data for $location" }
         val convById = mutableMapOf<Long, ConversationPart>()
         conversation.conversationParts.forEach {
             if (it.processorId != null && it.processorId.isNotBlank()) {
@@ -70,6 +71,7 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
             options.add(it)
         }
 
+        logger.info { "data for $location was built" }
         return LocationData(
             location,
             conversation.conversationParts[0].id,

@@ -1,6 +1,7 @@
 package ndw.eugene.textgaming.services
 
 import jakarta.annotation.PostConstruct
+import mu.KotlinLogging
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.ConversationPart
 import ndw.eugene.textgaming.data.GameMessage
@@ -13,6 +14,8 @@ import ndw.eugene.textgaming.loaders.ConversationLoader
 import org.springframework.stereotype.Service
 import java.util.UUID
 
+private val logger = KotlinLogging.logger {}
+
 @Service
 class GameService(
     private val locationService: LocationService,
@@ -23,6 +26,8 @@ class GameService(
     fun initGameService() {
         val locations = conversationLoader.loadLocations()
         locationService.initLocationService(locations)
+
+        logger.info { "game service was initialized" }
     }
 
     fun userHasGameStarted(userId: Long): Boolean {
@@ -34,10 +39,12 @@ class GameService(
         processConversation(game)
         val savedGame = gameStateRepository.save(game)
 
+        logger.info { "game with id: ${savedGame.id} for user: $userId was started in location: $location" }
         return getGameMessage(savedGame)
     }
 
     fun chooseOption(userId: Long, optionId: String): GameMessage {
+        logger.info { "user: $userId chose option: $optionId" }
         val game = getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
         val optionUUID = UUID.fromString(optionId)
 
@@ -70,11 +77,11 @@ class GameService(
         return GameMessage(conversationPart, options)
     }
 
-    fun processConversation(gameState: GameState) {
+    private fun processConversation(gameState: GameState) {
         getCurrentConversation(gameState).executable.invoke(gameState)
     }
 
-    fun progressConversation(gameState: GameState, optionId: UUID) {
+    private fun progressConversation(gameState: GameState, optionId: UUID) {
         val option = getOptions(gameState).find { it.uuid == optionId }
             ?: throw IllegalArgumentException("no option with id: $optionId")
         if (!option.condition.invoke(gameState)) throw IllegalArgumentException("not available option")
@@ -83,13 +90,13 @@ class GameService(
         gameState.currentConversationId = option.toId
     }
 
-    fun getCurrentConversation(gameState: GameState): ConversationPart {
+    private fun getCurrentConversation(gameState: GameState): ConversationPart {
         val location = locationService.getLocationData(gameState.location)
 
         return location.convById[gameState.currentConversationId] ?: throw IllegalArgumentException()
     }
 
-    fun getAvailableOptions(gameState: GameState): List<UserOption> {
+    private fun getAvailableOptions(gameState: GameState): List<UserOption> {
         val options = getOptions(gameState).map {
             val selected = isOptionSelected(gameState, it.uuid)
             val available = it.condition.invoke(gameState)
