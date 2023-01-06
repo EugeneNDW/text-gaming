@@ -1,4 +1,4 @@
-package ndw.eugene.textgaming.structure.data
+package ndw.eugene.textgaming.data
 
 import kotlinx.serialization.Serializable
 import ndw.eugene.textgaming.content.ConversationProcessor

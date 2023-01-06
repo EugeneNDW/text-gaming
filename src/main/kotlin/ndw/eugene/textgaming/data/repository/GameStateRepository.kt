@@ -1,6 +1,6 @@
-package ndw.eugene.textgaming.structure.data.repository
+package ndw.eugene.textgaming.data.repository
 
-import ndw.eugene.textgaming.structure.data.entity.GameState
+import ndw.eugene.textgaming.data.entity.GameState
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 

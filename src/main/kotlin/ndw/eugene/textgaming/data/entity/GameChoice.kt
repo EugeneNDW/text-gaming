@@ -1,6 +1,8 @@
-package ndw.eugene.textgaming.structure.data.entity
+package ndw.eugene.textgaming.data.entity
 
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -8,19 +10,19 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import kotlinx.serialization.Serializable
-import ndw.eugene.textgaming.structure.data.UUIDSerializer
-import java.util.UUID
+import ndw.eugene.textgaming.content.Choice
 
 @Entity
-@Table(name = "game_history")
+@Table(name = "game_choice")
 @Serializable
-class GameHistory {
+class GameChoice {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    @Serializable(with = UUIDSerializer::class)
-    lateinit var optionId: UUID
+    @Enumerated(EnumType.STRING)
+    lateinit var choice: Choice
 
     @ManyToOne
     @JoinColumn(name = "game_id")
@@ -28,7 +30,7 @@ class GameHistory {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is GameHistory) return false
+        if (other !is GameChoice) return false
 
         return id != null && id == other.id
     }

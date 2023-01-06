@@ -1,4 +1,4 @@
-package ndw.eugene.textgaming.structure.data.entity
+package ndw.eugene.textgaming.data.entity
 
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column

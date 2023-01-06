@@ -1,9 +1,9 @@
-package ndw.eugene.textgaming.structure.services
+package ndw.eugene.textgaming.services
 
 import ndw.eugene.textgaming.content.Location
-import ndw.eugene.textgaming.structure.data.LocationData
-import ndw.eugene.textgaming.structure.data.entity.GameState
-import ndw.eugene.textgaming.structure.data.repository.GameStateRepository
+import ndw.eugene.textgaming.data.LocationData
+import ndw.eugene.textgaming.data.entity.GameState
+import ndw.eugene.textgaming.data.repository.GameStateRepository
 import org.springframework.stereotype.Service
 
 @Service

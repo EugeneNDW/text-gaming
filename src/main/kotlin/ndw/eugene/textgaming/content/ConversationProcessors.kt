@@ -1,8 +1,8 @@
 package ndw.eugene.textgaming.content
 
-import ndw.eugene.textgaming.structure.data.entity.GameState
-import ndw.eugene.textgaming.structure.services.ChoiceService
-import ndw.eugene.textgaming.structure.services.LocationService
+import ndw.eugene.textgaming.data.entity.GameState
+import ndw.eugene.textgaming.services.ChoiceService
+import ndw.eugene.textgaming.services.LocationService
 import org.springframework.stereotype.Component
 
 typealias ConversationProcessor = (GameState) -> Unit

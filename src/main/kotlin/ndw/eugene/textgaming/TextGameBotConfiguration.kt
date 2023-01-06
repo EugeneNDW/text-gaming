@@ -13,8 +13,8 @@ import com.github.kotlintelegrambot.entities.TelegramFile
 import com.github.kotlintelegrambot.logging.LogLevel
 import mu.KotlinLogging
 import ndw.eugene.textgaming.content.Location
-import ndw.eugene.textgaming.structure.data.GameMessage
-import ndw.eugene.textgaming.structure.services.*
+import ndw.eugene.textgaming.data.GameMessage
+import ndw.eugene.textgaming.services.GameService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -23,10 +23,10 @@ private val logger = KotlinLogging.logger {}
 
 @Configuration
 class TextGameBotConfiguration {
-
     @Bean
     fun getBot(
-        @Value("\${application.bot.token}") botToken: String, gameService: GameService): Bot {
+        @Value("\${application.bot.token}") botToken: String, gameService: GameService
+    ): Bot {
         return bot {
             logLevel = LogLevel.All()
             token = botToken

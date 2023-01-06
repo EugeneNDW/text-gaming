@@ -1,4 +1,4 @@
-package ndw.eugene.textgaming.structure.data
+package ndw.eugene.textgaming.data
 
 data class GameMessage(
     val currentConversation: ConversationPart,

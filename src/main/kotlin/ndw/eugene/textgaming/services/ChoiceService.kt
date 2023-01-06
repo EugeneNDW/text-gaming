@@ -1,8 +1,8 @@
-package ndw.eugene.textgaming.structure.services
+package ndw.eugene.textgaming.services
 
 import ndw.eugene.textgaming.content.Choice
-import ndw.eugene.textgaming.structure.data.entity.GameChoice
-import ndw.eugene.textgaming.structure.data.entity.GameState
+import ndw.eugene.textgaming.data.entity.GameChoice
+import ndw.eugene.textgaming.data.entity.GameState
 import org.springframework.stereotype.Service
 
 @Service

@@ -1,15 +1,15 @@
-package ndw.eugene.textgaming.structure.services
+package ndw.eugene.textgaming.services
 
 import jakarta.annotation.PostConstruct
 import ndw.eugene.textgaming.content.Location
+import ndw.eugene.textgaming.data.ConversationPart
+import ndw.eugene.textgaming.data.GameMessage
+import ndw.eugene.textgaming.data.Option
+import ndw.eugene.textgaming.data.UserOption
+import ndw.eugene.textgaming.data.entity.GameHistory
+import ndw.eugene.textgaming.data.entity.GameState
+import ndw.eugene.textgaming.data.repository.GameStateRepository
 import ndw.eugene.textgaming.loaders.ConversationLoader
-import ndw.eugene.textgaming.structure.data.ConversationPart
-import ndw.eugene.textgaming.structure.data.GameMessage
-import ndw.eugene.textgaming.structure.data.Option
-import ndw.eugene.textgaming.structure.data.UserOption
-import ndw.eugene.textgaming.structure.data.entity.GameHistory
-import ndw.eugene.textgaming.structure.data.entity.GameState
-import ndw.eugene.textgaming.structure.data.repository.GameStateRepository
 import org.springframework.stereotype.Service
 import java.util.UUID
 

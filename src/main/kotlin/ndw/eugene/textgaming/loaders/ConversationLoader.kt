@@ -6,9 +6,9 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import ndw.eugene.textgaming.content.ConversationProcessors
 import ndw.eugene.textgaming.content.Location
-import ndw.eugene.textgaming.structure.data.ConversationPart
-import ndw.eugene.textgaming.structure.data.LocationData
-import ndw.eugene.textgaming.structure.data.Option
+import ndw.eugene.textgaming.data.ConversationPart
+import ndw.eugene.textgaming.data.LocationData
+import ndw.eugene.textgaming.data.Option
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Component

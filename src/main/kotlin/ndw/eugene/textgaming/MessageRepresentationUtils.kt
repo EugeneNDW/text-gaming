@@ -6,8 +6,8 @@ import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
 import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
-import ndw.eugene.textgaming.structure.data.ConversationPart
-import ndw.eugene.textgaming.structure.data.UserOption
+import ndw.eugene.textgaming.data.ConversationPart
+import ndw.eugene.textgaming.data.UserOption
 
 private const val DEFAULT_OPTION_TEXT = "..."
 private const val DEFAULT_OPTION_BUTTON_TEXT = "continue..."
@@ -15,8 +15,9 @@ private const val DEFAULT_OPTION_BUTTON_TEXT = "continue..."
 fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
     var result = ""
     result += makeTextBold(
-        prepareForMarkdown("${conversationPart.character}:")) +
-            "\n" + prepareForMarkdown(conversationPart.text)
+        prepareForMarkdown("${conversationPart.character}:")
+    ) +
+        "\n" + prepareForMarkdown(conversationPart.text)
     result += "\n\n"
 
     val hasOnlyDefaultOption = options.size == 1 && options[0].option.optionText == DEFAULT_OPTION_TEXT
@@ -71,7 +72,8 @@ fun createStartGameButton(): InlineKeyboardMarkup {
         InlineKeyboardButton.CallbackData(
             text = "start new game",
             callbackData = "START_GAME"
-        ))
+        )
+    )
 
     return InlineKeyboardMarkup.create(buttons)
 }
