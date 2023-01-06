@@ -11,24 +11,23 @@ import ndw.eugene.textgaming.data.UserOption
 
 private const val DEFAULT_OPTION_TEXT = "..."
 private const val DEFAULT_OPTION_BUTTON_TEXT = "continue..."
+private const val NEW_GAME_BUTTON_TEXT = "start new game"
+private const val TEXT_OPTIONS_DELIMITER = "\n\n"
+private const val CHARACTER_TEXT_DELIMITER = "\n"
 
 fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
     var result = ""
-    result += makeTextBold(
-        prepareForMarkdown("${conversationPart.character}:")
-    ) +
-        "\n" + prepareForMarkdown(conversationPart.text)
-    result += "\n\n"
+    result += makeTextBold("${conversationPart.character}:") + CHARACTER_TEXT_DELIMITER + conversationPart.text
+    result += TEXT_OPTIONS_DELIMITER
 
     val hasOnlyDefaultOption = options.size == 1 && options[0].option.optionText == DEFAULT_OPTION_TEXT
     if (!hasOnlyDefaultOption) {
         options.forEachIndexed { index, userOption ->
             val text = "${index + 1}. ${userOption.option.optionText}"
-            val preparedText = prepareForMarkdown(text)
             result += if (!userOption.selected) {
-                makeTextBold(preparedText)
+                makeTextBold(text)
             } else {
-                makeStrikeThrough(preparedText)
+                makeTextStrikethrough(text)
             }
             result += "\n"
         }
@@ -42,22 +41,22 @@ fun editMessage(bot: Bot, message: Message) {
     val messageCaption = message.caption
 
     if (messageText != null) {
-        val newText = editText(messageText)
+        val newText = removeOptionsFromMessage(messageText)
 
         bot.editMessageText(
             chatId = ChatId.fromId(message.chat.id),
             messageId = message.messageId,
             text = newText,
-            parseMode = ParseMode.MARKDOWN_V2
+            parseMode = ParseMode.HTML
         )
     } else if (messageCaption != null) {
-        val newText = editText(messageCaption)
+        val newText = removeOptionsFromMessage(messageCaption)
 
         bot.editMessageCaption(
             chatId = ChatId.fromId(message.chat.id),
             messageId = message.messageId,
             caption = newText,
-            parseMode = ParseMode.MARKDOWN_V2
+            parseMode = ParseMode.HTML
         )
     } else {
         println(message)
@@ -70,7 +69,7 @@ fun createStartGameButton(): InlineKeyboardMarkup {
 
     buttons.add(
         InlineKeyboardButton.CallbackData(
-            text = "start new game",
+            text = NEW_GAME_BUTTON_TEXT,
             callbackData = "START_GAME"
         )
     )
@@ -105,52 +104,19 @@ fun optionsToButtons(options: List<UserOption>): InlineKeyboardMarkup {
     return InlineKeyboardMarkup.create(buttons)
 }
 
-private fun editText(text: String): String {
-    val messageTokens = text.split("\n\n")
-    val messageWithoutOptions = messageTokens[0]
-    val messageWithoutOptionsTokens = messageWithoutOptions.split("\n")
+private fun removeOptionsFromMessage(message: String): String {
+    val messageTokens = message.split(TEXT_OPTIONS_DELIMITER)
+    val characterAndText = messageTokens[0]
+    val characterAndTextTokens = characterAndText.split(CHARACTER_TEXT_DELIMITER)
+    val character = makeTextBold(characterAndTextTokens[0])
 
-    return makeTextBold(prepareForMarkdown(messageWithoutOptionsTokens[0])) + " \n" + prepareForMarkdown(
-        messageWithoutOptionsTokens[1]
-    )
+    return character + CHARACTER_TEXT_DELIMITER + characterAndTextTokens[1]
 }
-
-
-private fun prepareForMarkdown(text: String): String {
-    val result = StringBuilder()
-
-    for (c in text) {
-        when (c) {
-            '*' -> result.append("\\*")
-            '_' -> result.append("\\_")
-            '[' -> result.append("\\[")
-            ']' -> result.append("\\]")
-            '(' -> result.append("\\(")
-            ')' -> result.append("\\)")
-            '#' -> result.append("\\#")
-            '~' -> result.append("\\~")
-            '`' -> result.append("\\`")
-            '>' -> result.append("\\>")
-            '+' -> result.append("\\+")
-            '-' -> result.append("\\-")
-            '=' -> result.append("\\=")
-            '|' -> result.append("\\|")
-            '{' -> result.append("\\{")
-            '}' -> result.append("\\}")
-            '.' -> result.append("\\.")
-            '!' -> result.append("\\!")
-            else -> result.append(c)
-        }
-    }
-
-    return result.toString()
-}
-
 
 private fun makeTextBold(text: String): String {
-    return "*$text*"
+    return "<b>$text</b>"
 }
 
-private fun makeStrikeThrough(text: String): String {
-    return "~$text~"
+private fun makeTextStrikethrough(text: String): String {
+    return "<s>$text</s>"
 }

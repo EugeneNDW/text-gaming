@@ -121,14 +121,14 @@ class TextGameBotConfiguration {
                 photo = TelegramFile.ByByteArray(readBytesFromFile(illustration), illustration),
                 caption = formatResponse,
                 replyMarkup = optionButtons,
-                parseMode = ParseMode.MARKDOWN_V2
+                parseMode = ParseMode.HTML
             )
         } else {
             bot.sendMessage(
                 chatId = ChatId.fromId(chatId),
                 text = formatResponse,
                 replyMarkup = optionButtons,
-                parseMode = ParseMode.MARKDOWN_V2
+                parseMode = ParseMode.HTML
             )
         }
     }
