@@ -2,7 +2,9 @@ package ndw.eugene.textgaming.data.entity
 
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
+import jakarta.persistence.EntityListeners
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
@@ -12,9 +14,11 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import ndw.eugene.textgaming.content.Location
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
 @Table(name = "game_state")
+@EntityListeners(AuditingEntityListener::class)
 class GameState {
 
     @Id
@@ -36,6 +40,9 @@ class GameState {
 
     @OneToMany(mappedBy = "gameState", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     val gameHistory: MutableSet<GameHistory> = mutableSetOf()
+
+    @Embedded
+    val auditInfo: AuditInfo = AuditInfo()
 
     fun addChoice(choice: GameChoice) {
         choice.gameState = this
