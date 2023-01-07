@@ -7,19 +7,15 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import kotlinx.serialization.Serializable
-import ndw.eugene.textgaming.data.UUIDSerializer
 import java.util.UUID
 
 @Entity
 @Table(name = "game_history")
-@Serializable
 class GameHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    @Serializable(with = UUIDSerializer::class)
     lateinit var optionId: UUID
 
     @ManyToOne

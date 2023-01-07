@@ -11,12 +11,10 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
-import kotlinx.serialization.Serializable
 import ndw.eugene.textgaming.content.Location
 
 @Entity
 @Table(name = "game_state")
-@Serializable //todo подумать как убрать, нужно потому что является частью ConversationProcessor'а
 class GameState {
 
     @Id

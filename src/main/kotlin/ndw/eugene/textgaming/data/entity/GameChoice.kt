@@ -9,12 +9,10 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import kotlinx.serialization.Serializable
 import ndw.eugene.textgaming.content.Choice
 
 @Entity
 @Table(name = "game_choice")
-@Serializable
 class GameChoice {
 
     @Id

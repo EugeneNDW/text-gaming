@@ -1,10 +1,16 @@
 package ndw.eugene.textgaming.loaders
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import ndw.eugene.textgaming.content.ConversationProcessors
+import ndw.eugene.textgaming.content.GameCharacter
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.ConversationPart
 import ndw.eugene.textgaming.data.LocationData
@@ -15,6 +21,7 @@ import org.springframework.stereotype.Component
 import org.springframework.util.FileCopyUtils
 import java.io.InputStreamReader
 import java.util.Arrays
+import java.util.UUID
 import java.util.stream.Collectors.toList
 
 private val logger = KotlinLogging.logger {}
@@ -38,9 +45,9 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
                     FileCopyUtils.copyToString(it)
                 }
                 val conversation = Json.decodeFromString<Conversation>(text)
-
                 val locationData = buildLocationData(conversation, location)
                 logger.info { "${r.filename} was loaded" }
+
                 locationData
             }
             .collect(toList())
@@ -54,21 +61,16 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
         logger.info { "building data for $location" }
         val convById = mutableMapOf<Long, ConversationPart>()
         conversation.conversationParts.forEach {
-            if (it.processorId != null && it.processorId.isNotBlank()) {
-                it.executable = conversationProcessors.getProcessorById(it.processorId)
-            }
-            convById[it.id] = it
+            val conversationPart = buildConversationPart(it)
+
+            convById[it.id] = conversationPart
         }
 
         val convToOption = mutableMapOf<Long, MutableList<Option>>()
         conversation.options.forEach {
-            val options = convToOption.getOrPut(it.fromId) {
-                mutableListOf()
-            }
-            if (it.optionConditionId != null && it.optionConditionId.isNotBlank()) {
-                it.condition = conversationProcessors.getOptionConditionById(it.optionConditionId)
-            }
-            options.add(it)
+            val options = convToOption.getOrPut(it.fromId) { mutableListOf() }
+            val option = buildOption(it)
+            options.add(option)
         }
 
         logger.info { "data for $location was built" }
@@ -79,10 +81,70 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
             convToOption
         )
     }
+
+    private fun buildConversationPart(conversationPartDto: ConversationPartDto): ConversationPart {
+        val conversationPart = ConversationPart(
+            id = conversationPartDto.id,
+            character = conversationPartDto.character,
+            text = conversationPartDto.text,
+            illustration = conversationPartDto.illustration
+        )
+
+        if (conversationPartDto.processorId != null && conversationPartDto.processorId.isNotBlank()) {
+            conversationPart.executable = conversationProcessors.getProcessorById(conversationPartDto.processorId)
+        }
+
+        return conversationPart
+    }
+
+    private fun buildOption(optionDto: OptionDto): Option {
+        val option = Option(
+            uuid = optionDto.uuid,
+            fromId = optionDto.fromId,
+            toId = optionDto.toId,
+            optionText = optionDto.optionText,
+        )
+        if (optionDto.optionConditionId != null && optionDto.optionConditionId.isNotBlank()) {
+            option.condition = conversationProcessors.getOptionConditionById(optionDto.optionConditionId)
+        }
+
+        return option
+    }
 }
 
 @Serializable
 private data class Conversation(
-    val conversationParts: List<ConversationPart>,
-    val options: List<Option>
+    val conversationParts: List<ConversationPartDto>,
+    val options: List<OptionDto>
 )
+
+@Serializable
+private data class ConversationPartDto(
+    val id: Long,
+    val character: GameCharacter,
+    val text: String,
+    val processorId: String? = null,
+    val illustration: String? = null,
+)
+
+@Serializable
+private data class OptionDto(
+    @Serializable(with = UUIDSerializer::class)
+    val uuid: UUID,
+    val fromId: Long,
+    val toId: Long,
+    val optionText: String,
+    val optionConditionId: String? = null,
+)
+
+object UUIDSerializer : KSerializer<UUID> {
+    override val descriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): UUID {
+        return UUID.fromString(decoder.decodeString())
+    }
+
+    override fun serialize(encoder: Encoder, value: UUID) {
+        encoder.encodeString(value.toString())
+    }
+}
