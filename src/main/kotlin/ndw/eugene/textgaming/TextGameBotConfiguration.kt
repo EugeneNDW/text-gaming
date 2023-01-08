@@ -14,6 +14,7 @@ import com.github.kotlintelegrambot.logging.LogLevel
 import mu.KotlinLogging
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.GameMessage
+import ndw.eugene.textgaming.services.FeedbackService
 import ndw.eugene.textgaming.services.GameService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -27,7 +28,8 @@ class TextGameBotConfiguration {
     fun getBot(
         @Value("\${application.bot.token}") botToken: String,
         @Value("\${application.bot.loglevel}") botLogLevel: String,
-        gameService: GameService
+        gameService: GameService,
+        feedbackService: FeedbackService
     ): Bot {
         return bot {
             logLevel = decideLogLevel(botLogLevel)
@@ -40,6 +42,30 @@ class TextGameBotConfiguration {
 
                 callbackQuery {
                     logger.info { "update received: $update" }
+                }
+
+                command("report") {
+                    if (!checkAuthorized(message)) {
+                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
+                        return@command
+                    }
+
+                    val reportText = args.joinToString(" ")
+                    feedbackService.writeReport(message.chat.id, reportText)
+
+                    bot.sendMessage(ChatId.fromId(message.chat.id), "we got your report and we'll fix it asap")
+                }
+
+                command("feedback") {
+                    if (!checkAuthorized(message)) {
+                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
+                        return@command
+                    }
+
+                    val feedbackText = args.joinToString(" ")
+                    feedbackService.writeFeedback(message.chat.id, feedbackText)
+
+                    bot.sendMessage(ChatId.fromId(message.chat.id), "ty for feedback <3")
                 }
 
                 command("start_in") {
@@ -141,7 +167,7 @@ class TextGameBotConfiguration {
     }
 
     private fun decideLogLevel(logLevel: String): LogLevel {
-        return when(logLevel) {
+        return when (logLevel) {
             "none" -> LogLevel.None
             else -> {
                 LogLevel.All()
