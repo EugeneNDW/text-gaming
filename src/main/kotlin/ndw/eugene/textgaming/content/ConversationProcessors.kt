@@ -30,6 +30,12 @@ class ConversationProcessors(
     }
 
     private fun initProcessors() {
+        processorsById["changeLocationToSunkenLibraryInside"] = {
+            println("change location to sunken library inside") //todo make real location change when ready
+        }
+        processorsById["changeLocationToHarpiesLair"] = {
+            println("change location to harpie's lair") //todo make real location change when ready
+        }
         processorsById["changeLocationToJungle"] = {
             println("change location to jungle") //todo make real location change when ready
         }
@@ -104,6 +110,27 @@ class ConversationProcessors(
         }
         processorsById["memorizeWhatHappenedToTheLibrary"] = {
             choiceService.addChoice(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
+        }
+        processorsById["memorizeDestroyed"] = {
+            choiceService.addChoice(it, Choice.ASKED_DESTROYED_HOW)
+        }
+        processorsById["memorizeLibrarians"] = {
+            choiceService.addChoice(it, Choice.ASKED_LIBRARIANS)
+        }
+        processorsById["memorizeSpyglass"] = {
+            choiceService.addChoice(it, Choice.SPYGLASS)
+        }
+        processorsById["memorizeTookTablet"] = {
+            choiceService.addChoice(it, Choice.TOOK_TABLET)
+        }
+        processorsById["memorizeExaminedStatue"] = {
+            choiceService.addChoice(it, Choice.EXAMINED_STATUE)
+        }
+        processorsById["memorizeExaminedShelves"] = {
+            choiceService.addChoice(it, Choice.EXAMINED_SHELVES)
+        }
+        processorsById["memorizePickStar"] = {
+            choiceService.addChoice(it, Choice.PICK_STAR)
         }
     }
 
@@ -184,6 +211,9 @@ class ConversationProcessors(
         optionsById["checkHeardEpicSong"] = {
             choiceService.checkChoiceHasBeenMade(it, Choice.EPIC_SONG)
         }
+        optionsById["checkDidntHearEpicSong"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.EPIC_SONG)
+        }
         optionsById["checkHeardFunnySong"] = {
             choiceService.checkChoiceHasBeenMade(it, Choice.FUNNY_SONG)
         }
@@ -199,6 +229,75 @@ class ConversationProcessors(
         }
         optionsById["checkAskedAboutResearch"] = {
             choiceService.checkChoiceHasBeenMade(it, Choice.RESEARCH)
+        }
+        optionsById["checkKnowsAboutLibrary"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
+        }
+        optionsById["checkDontKnowAboutLibrary"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
+        }
+        optionsById["checkDestroyed"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.ASKED_DESTROYED_HOW)
+        }
+        optionsById["checkNotDestroyed"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.ASKED_DESTROYED_HOW)
+        }
+        optionsById["checkLibrarians"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.ASKED_LIBRARIANS)
+        }
+        optionsById["checkNotLibrarians"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.ASKED_LIBRARIANS)
+        }
+        optionsById["checkMetTheHarpy"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.MET_THE_HARPY)
+        }
+        optionsById["checkDidntMeetTheHarpy"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.MET_THE_HARPY)
+        }
+        optionsById["checkWentThroughStorm"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.WENT_THROUGH_THE_STORM)
+        }
+        optionsById["checkDidntGoThroughStorm"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.WENT_THROUGH_THE_STORM)
+        }
+        optionsById["checkStatuesNotExamined"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_STATUE)
+        }
+        optionsById["checkStatueExamined"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_STATUE)
+        }
+        optionsById["checkShelvesNotExamined"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_SHELVES)
+        }
+        optionsById["checkShelvesExamined"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_SHELVES)
+        }
+        optionsById["checkTabletIsNotTaken"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.TOOK_TABLET)
+        }
+        optionsById["checkTabletIsTaken"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.TOOK_TABLET)
+        }
+        optionsById["checkLeftShepherdToLibrary"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_LIBRARY) //todo добавить в процессор который запомнит это во встрече с SHEPHERD
+        }
+        optionsById["checkLeftShepherdToHarpies"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_HARPIES) //todo добавить в процессор который запомнит это во встрече с SHEPHERD
+        }
+        optionsById["checkLeftShepherdToJungle"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_JUNGLE) //todo добавить в процессор который запомнит это во встрече с SHEPHERD
+        }
+        optionsById["checkShepherdIsFriend"] = {
+            true //todo сделать запоминалку и CHOICE
+        }
+        optionsById["checkGaveShepherdTonic"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.GIVE_TONIC_TO_SHEPHERD) //todo добавить в процессор который запомнит это в SUNKEN_LIBRARY_INSIDE
+        }
+        optionsById["checkSpyglass"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.SPYGLASS)
+        }
+        optionsById["checkNotSpyglass"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.SPYGLASS)
         }
     }
 }

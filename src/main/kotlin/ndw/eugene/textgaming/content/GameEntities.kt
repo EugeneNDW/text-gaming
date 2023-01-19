@@ -14,6 +14,9 @@ enum class GameCharacter {
     MERCHANT,
     SAILOR,
     CAPTAIN,
+    HARPY,
+    HARPIES,
+    SHEPHERD
 }
 
 enum class Location {
@@ -25,5 +28,9 @@ enum class Location {
     SHIP,
     STORM,
     TEST,
-    SUNKEN_LIBRARY_SHORE
+    SUNKEN_LIBRARY_SHORE,
+    HARPY_ENCOUNTER,
+    SHEPHERD_ENCOUNTER,
+    SUNKEN_LIBRARY_INSIDE,
+    HARPIES_LAIR
 }
