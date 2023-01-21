@@ -132,6 +132,9 @@ class ConversationProcessors(
         processorsById["memorizePickStar"] = {
             choiceService.addChoice(it, Choice.PICK_STAR)
         }
+        processorsById["endGame"] = {
+            //todo сделать механизм завершения игры
+        }
     }
 
     private fun initOptionConditions() {
@@ -298,6 +301,44 @@ class ConversationProcessors(
         }
         optionsById["checkNotSpyglass"] = {
             !choiceService.checkChoiceHasBeenMade(it, Choice.SPYGLASS)
+        }
+        optionsById["checkFioreAppeared"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.FIORE_APPEARED)
+        }
+        optionsById["checkFioreDidntAppear"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.FIORE_APPEARED)
+        }
+        optionsById["checkPickedStar"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.PICK_STAR)
+        }
+        optionsById["checkDidntPickStar"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.PICK_STAR)
+        }
+        optionsById["checkForcedBoy"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.BOY_FORCED)
+        }
+        optionsById["checkDidntForceBoy"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.BOY_FORCED)
+        }
+
+        optionsById["checkZeroFound"] = {
+            true //todo реализация
+        }
+        optionsById["checkOneFound"] = {
+            true //todo реализация
+        }
+        optionsById["checkTwoFound"] = {
+            true //todo реализация
+        }
+
+        optionsById["checkLiedAboutBeetles"] = {
+            true //todo реализация
+        }
+        optionsById["checkLiedAboutRocks"] = {
+            true //todo реализация
+        }
+        optionsById["checkLiedAboutPlants"] = {
+            true //todo реализация
         }
     }
 }

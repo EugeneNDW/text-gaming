@@ -28,6 +28,7 @@ enum class Choice {
     LEFT_SHEPHERD_TO_LIBRARY,
     LEFT_SHEPHERD_TO_HARPIES,
     LEFT_SHEPHERD_TO_JUNGLE,
+    BOY_FORCED,
 
 
     //technical

@@ -4,7 +4,7 @@ enum class GameCharacter {
     //main
     YOU,
     RENART,
-    LOST_BOY,
+    SHEPHERD,
     ASTRONOMER,
     HIGH_STARGAZER,
 
@@ -16,7 +16,6 @@ enum class GameCharacter {
     CAPTAIN,
     HARPY,
     HARPIES,
-    SHEPHERD
 }
 
 enum class Location {
@@ -32,5 +31,8 @@ enum class Location {
     HARPY_ENCOUNTER,
     SHEPHERD_ENCOUNTER,
     SUNKEN_LIBRARY_INSIDE,
-    HARPIES_LAIR
+    HARPIES_LAIR,
+    BOY_EPILOGUE,
+    WIZARD_EPILOGUE,
+    SHIP_EPILOGUE
 }
