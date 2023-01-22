@@ -56,7 +56,7 @@ class GameService(
         return getGameMessage(savedGame)
     }
 
-    private fun getUsersCurrentGame(userId: Long): GameState? {
+    fun getUsersCurrentGame(userId: Long): GameState? {
         return gameStateRepository.findGameStateWithMaxIdByUserId(userId)
     }
 

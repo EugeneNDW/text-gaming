@@ -12,8 +12,8 @@ private val logger = KotlinLogging.logger {}
 class ChoiceService {
     fun addChoice(gameState: GameState, choice: Choice) {
         val gameChoice = GameChoice()
-
         gameChoice.choice = choice
+
         gameState.addChoice(gameChoice)
 
         logger.info { "user: ${gameState.userId} made choice: $choice in game: ${gameState.id}" }

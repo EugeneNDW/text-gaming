@@ -12,10 +12,12 @@ import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.TelegramFile
 import com.github.kotlintelegrambot.logging.LogLevel
 import mu.KotlinLogging
+import ndw.eugene.textgaming.content.Choice
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.GameMessage
 import ndw.eugene.textgaming.services.FeedbackService
 import ndw.eugene.textgaming.services.GameService
+import ndw.eugene.textgaming.services.ManagerService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,6 +31,7 @@ class TextGameBotConfiguration {
         @Value("\${application.bot.token}") botToken: String,
         @Value("\${application.bot.loglevel}") botLogLevel: String,
         gameService: GameService,
+        managerService: ManagerService,
         feedbackService: FeedbackService
     ): Bot {
         return bot {
@@ -43,7 +46,17 @@ class TextGameBotConfiguration {
                 callbackQuery {
                     logger.info { "update received: $update" }
                 }
+                command("choices") {
+                    if (!checkAuthorized(message)) {
+                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
+                        return@command
+                    }
 
+                    val chatId = message.chat.id
+                    val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
+                    val buttons = getChoicesButtons(gameState)
+                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "CHOICES", replyMarkup = buttons)
+                }
                 command("report") {
                     if (!checkAuthorized(message)) {
                         bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
@@ -103,7 +116,10 @@ class TextGameBotConfiguration {
                 }
 
                 callbackQuery {
-                    if (callbackQuery.data != "START_GAME") {
+                    if (callbackQuery.data != "START_GAME"
+                        && !callbackQuery.data.startsWith("choose")
+                        && !callbackQuery.data.startsWith("unchoose")
+                    ) {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
                         if (!checkAuthorized(message)) {
@@ -129,6 +145,45 @@ class TextGameBotConfiguration {
 
                         val result = gameService.startNewGameForUser(chatId)
                         sendGameMessage(bot, chatId, result)
+                    }
+                }
+
+                //test buttons
+                callbackQuery {
+                    if (callbackQuery.data.startsWith("choose")) {
+                        val message = callbackQuery.message
+                        val chatId = message?.chat?.id ?: return@callbackQuery
+                        val choiceName = callbackQuery.data.split(":")[1]
+                        managerService.addChoice(chatId, Choice.valueOf(choiceName))
+                        val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
+                        val buttons = getChoicesButtons(gameState)
+
+                        bot.editMessageText(
+                            chatId = ChatId.fromId(chatId),
+                            messageId = message.messageId,
+                            text = "CHOICES",
+                            parseMode = ParseMode.HTML,
+                            replyMarkup = buttons
+                        )
+                    }
+                }
+
+                callbackQuery {
+                    if (callbackQuery.data.startsWith("unchoose")) {
+                        val message = callbackQuery.message
+                        val chatId = message?.chat?.id ?: return@callbackQuery
+                        val choiceName = callbackQuery.data.split(":")[1]
+                        managerService.removeChoice(chatId, Choice.valueOf(choiceName))
+                        val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
+                        val buttons = getChoicesButtons(gameState)
+
+                        bot.editMessageText(
+                            chatId = ChatId.fromId(chatId),
+                            messageId = message.messageId,
+                            text = "CHOICES",
+                            parseMode = ParseMode.HTML,
+                            replyMarkup = buttons
+                        )
                     }
                 }
             }
