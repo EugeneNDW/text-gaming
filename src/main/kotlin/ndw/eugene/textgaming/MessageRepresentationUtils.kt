@@ -17,6 +17,11 @@ private const val DEFAULT_OPTION_BUTTON_TEXT = "continue..."
 private const val NEW_GAME_BUTTON_TEXT = "start new game"
 private const val TEXT_OPTIONS_DELIMITER = "\n\n"
 private const val CHARACTER_TEXT_DELIMITER = "\n"
+const val BUTTON_ID_DELIMITER = ":"
+
+enum class ButtonId {
+    CHOOSE, UNCHOOSE, OPTION, START, LOCATION
+}
 
 fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
     var result = ""
@@ -73,7 +78,7 @@ fun createStartGameButton(): InlineKeyboardMarkup {
     buttons.add(
         InlineKeyboardButton.CallbackData(
             text = NEW_GAME_BUTTON_TEXT,
-            callbackData = "START_GAME"
+            callbackData = ButtonId.START.name
         )
     )
 
@@ -88,7 +93,7 @@ fun optionsToButtons(options: List<UserOption>): InlineKeyboardMarkup {
         buttons.add(
             InlineKeyboardButton.CallbackData(
                 text = DEFAULT_OPTION_BUTTON_TEXT,
-                callbackData = "${options[0].option.uuid}"
+                callbackData = "${ButtonId.OPTION.name}$BUTTON_ID_DELIMITER${options[0].option.uuid}"
             )
         )
     } else {
@@ -97,7 +102,7 @@ fun optionsToButtons(options: List<UserOption>): InlineKeyboardMarkup {
                 buttons.add(
                     InlineKeyboardButton.CallbackData(
                         text = "${index + 1}",
-                        callbackData = "${userOption.option.uuid}"
+                        callbackData = "${ButtonId.OPTION.name}$BUTTON_ID_DELIMITER${userOption.option.uuid}"
                     )
                 )
             }
@@ -119,7 +124,7 @@ fun getLocationsButtons(gameState: GameState): InlineKeyboardMarkup {
             listOf(
                 InlineKeyboardButton.CallbackData(
                     text = text,
-                    callbackData = "location:${it.name}"
+                    callbackData = "${ButtonId.LOCATION.name}$BUTTON_ID_DELIMITER${it.name}"
                 )
             )
         )
@@ -157,7 +162,7 @@ private fun createUnchooseButtonForChoice(choice: Choice): InlineKeyboardButton.
 
     return InlineKeyboardButton.CallbackData(
         text = text,
-        callbackData = "unchoose:${choice.name}"
+        callbackData = "${ButtonId.UNCHOOSE.name}$BUTTON_ID_DELIMITER${choice.name}"
     )
 }
 
@@ -166,7 +171,7 @@ private fun createChooseButtonForChoice(choice: Choice): InlineKeyboardButton.Ca
 
     return InlineKeyboardButton.CallbackData(
         text = text,
-        callbackData = "choose:${choice.name}"
+        callbackData = "${ButtonId.CHOOSE.name}$BUTTON_ID_DELIMITER${choice.name}"
     )
 }
 

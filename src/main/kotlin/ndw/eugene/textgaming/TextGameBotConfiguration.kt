@@ -102,14 +102,11 @@ class TextGameBotConfiguration {
                 }
 
                 callbackQuery {
-                    if (callbackQuery.data != "START_GAME"
-                        && !callbackQuery.data.startsWith("choose")
-                        && !callbackQuery.data.startsWith("unchoose")
-                        && !callbackQuery.data.startsWith("location")
-                    ) {
+                    if (callbackQuery.data.startsWith(ButtonId.OPTION.name)) {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
-                        val result = gameService.chooseOption(chatId, callbackQuery.data)
+                        val optionId = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
+                        val result = gameService.chooseOption(chatId, optionId)
 
                         editMessage(bot, message)
                         sendGameMessage(bot, chatId, result)
@@ -117,7 +114,7 @@ class TextGameBotConfiguration {
                 }
 
                 callbackQuery {
-                    if (callbackQuery.data == "START_GAME") {
+                    if (callbackQuery.data == ButtonId.START.name) {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
                         val result = gameService.startNewGameForUser(chatId)
@@ -125,9 +122,7 @@ class TextGameBotConfiguration {
                     }
                 }
 
-
                 //test buttons
-
                 command("whereami") {
                     val chatId = message.chat.id
                     val result = gameService.getUserCurrentPlace(chatId)
@@ -148,10 +143,10 @@ class TextGameBotConfiguration {
                 }
 
                 callbackQuery {
-                    if (callbackQuery.data.startsWith("location")) {
+                    if (callbackQuery.data.startsWith(ButtonId.LOCATION.name)) {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
-                        val locationName = callbackQuery.data.split(":")[1]
+                        val locationName = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
                         managerService.changeLocation(chatId, locationName)
 
                         val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
@@ -167,10 +162,10 @@ class TextGameBotConfiguration {
                 }
 
                 callbackQuery {
-                    if (callbackQuery.data.startsWith("choose")) {
+                    if (callbackQuery.data.startsWith(ButtonId.CHOOSE.name)) {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
-                        val choiceName = callbackQuery.data.split(":")[1]
+                        val choiceName = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
                         managerService.addChoice(chatId, Choice.valueOf(choiceName))
                         val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
                         val buttons = getChoicesButtons(gameState)
@@ -186,10 +181,10 @@ class TextGameBotConfiguration {
                 }
 
                 callbackQuery {
-                    if (callbackQuery.data.startsWith("unchoose")) {
+                    if (callbackQuery.data.startsWith(ButtonId.UNCHOOSE.name)) {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
-                        val choiceName = callbackQuery.data.split(":")[1]
+                        val choiceName = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
                         managerService.removeChoice(chatId, Choice.valueOf(choiceName))
                         val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
                         val buttons = getChoicesButtons(gameState)
