@@ -60,6 +60,11 @@ class GameService(
         return gameStateRepository.findGameStateWithMaxIdByUserId(userId)
     }
 
+    fun getUserCurrentPlace(userId: Long): GameMessage {
+        val game = getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
+        return getGameMessage(game)
+    }
+
     private fun createGameForUser(userId: Long, startLocation: Location): GameState {
         val conversationStartId = locationService.getLocationData(startLocation).startId
         val game = GameState()

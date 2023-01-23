@@ -46,6 +46,26 @@ class TextGameBotConfiguration {
                 callbackQuery {
                     logger.info { "update received: $update" }
                 }
+                command("whereami") {
+                    if (!checkAuthorized(message)) {
+                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
+                        return@command
+                    }
+                    val chatId = message.chat.id
+                    val result = gameService.getUserCurrentPlace(chatId)
+
+                    sendGameMessage(bot, chatId, result)
+                }
+                command("locations") {
+                    if (!checkAuthorized(message)) {
+                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
+                        return@command
+                    }
+                    val chatId = message.chat.id
+                    val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
+                    val buttons = getLocationsButtons(gameState)
+                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "LOCATIONS", replyMarkup = buttons)
+                }
                 command("choices") {
                     if (!checkAuthorized(message)) {
                         bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
@@ -119,6 +139,7 @@ class TextGameBotConfiguration {
                     if (callbackQuery.data != "START_GAME"
                         && !callbackQuery.data.startsWith("choose")
                         && !callbackQuery.data.startsWith("unchoose")
+                        && !callbackQuery.data.startsWith("location")
                     ) {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
@@ -149,6 +170,25 @@ class TextGameBotConfiguration {
                 }
 
                 //test buttons
+                callbackQuery {
+                    if (callbackQuery.data.startsWith("location")) {
+                        val message = callbackQuery.message
+                        val chatId = message?.chat?.id ?: return@callbackQuery
+                        val locationName = callbackQuery.data.split(":")[1]
+                        managerService.changeLocation(chatId, locationName)
+
+                        val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
+                        val buttons = getLocationsButtons(gameState)
+                        bot.editMessageText(
+                            chatId = ChatId.fromId(chatId),
+                            messageId = message.messageId,
+                            text = "LOCATIONS",
+                            parseMode = ParseMode.HTML,
+                            replyMarkup = buttons
+                        )
+                    }
+                }
+
                 callbackQuery {
                     if (callbackQuery.data.startsWith("choose")) {
                         val message = callbackQuery.message

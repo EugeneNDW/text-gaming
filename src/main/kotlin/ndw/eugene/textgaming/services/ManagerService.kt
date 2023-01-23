@@ -1,6 +1,7 @@
 package ndw.eugene.textgaming.services
 
 import ndw.eugene.textgaming.content.Choice
+import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.repository.GameStateRepository
 import org.springframework.stereotype.Service
 
@@ -10,6 +11,14 @@ class ManagerService(
     private val choiceService: ChoiceService,
     private val gameStateRepository: GameStateRepository
 ) {
+
+    fun changeLocation(userId: Long, locationName: String) {
+        val game = gameService.getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
+        val location = Location.valueOf(locationName)
+
+        game.location = location
+        gameStateRepository.save(game)
+    }
 
     fun addChoice(userId: Long, choice: Choice) {
         val game = gameService.getUsersCurrentGame(userId) ?: throw IllegalArgumentException()

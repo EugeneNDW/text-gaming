@@ -7,6 +7,7 @@ import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import ndw.eugene.textgaming.content.Choice
+import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.ConversationPart
 import ndw.eugene.textgaming.data.UserOption
 import ndw.eugene.textgaming.data.entity.GameState
@@ -101,6 +102,27 @@ fun optionsToButtons(options: List<UserOption>): InlineKeyboardMarkup {
                 )
             }
         }
+    }
+
+    return InlineKeyboardMarkup.create(buttons)
+}
+
+fun getLocationsButtons(gameState: GameState): InlineKeyboardMarkup {
+    val buttons: MutableList<List<InlineKeyboardButton>> = mutableListOf()
+
+    Location.values().forEach {
+        var text = it.name
+        if (it == gameState.location) {
+            text += "✅"
+        }
+        buttons.add(
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    text = text,
+                    callbackData = "location:${it.name}"
+                )
+            )
+        )
     }
 
     return InlineKeyboardMarkup.create(buttons)
