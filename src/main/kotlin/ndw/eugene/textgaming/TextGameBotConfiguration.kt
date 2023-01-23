@@ -39,50 +39,31 @@ class TextGameBotConfiguration {
             token = botToken
 
             dispatch {
+                //logging
                 message {
                     logger.info { "update received: $update" }
                 }
-
                 callbackQuery {
                     logger.info { "update received: $update" }
                 }
-                command("whereami") {
-                    if (!checkAuthorized(message)) {
-                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
-                        return@command
-                    }
-                    val chatId = message.chat.id
-                    val result = gameService.getUserCurrentPlace(chatId)
 
-                    sendGameMessage(bot, chatId, result)
-                }
-                command("locations") {
+                //authorization
+                message {
                     if (!checkAuthorized(message)) {
                         bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
-                        return@command
+                        update.consume()
                     }
-                    val chatId = message.chat.id
-                    val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
-                    val buttons = getLocationsButtons(gameState)
-                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "LOCATIONS", replyMarkup = buttons)
                 }
-                command("choices") {
+                callbackQuery {
+                    val message = callbackQuery.message
+                    val chatId = message?.chat?.id ?: return@callbackQuery
                     if (!checkAuthorized(message)) {
-                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
-                        return@command
+                        bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
+                        update.consume()
                     }
+                }
 
-                    val chatId = message.chat.id
-                    val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
-                    val buttons = getChoicesButtons(gameState)
-                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "CHOICES", replyMarkup = buttons)
-                }
                 command("report") {
-                    if (!checkAuthorized(message)) {
-                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
-                        return@command
-                    }
-
                     val reportText = args.joinToString(" ")
                     feedbackService.writeReport(message.chat.id, reportText)
 
@@ -90,11 +71,6 @@ class TextGameBotConfiguration {
                 }
 
                 command("feedback") {
-                    if (!checkAuthorized(message)) {
-                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
-                        return@command
-                    }
-
                     val feedbackText = args.joinToString(" ")
                     feedbackService.writeFeedback(message.chat.id, feedbackText)
 
@@ -102,11 +78,6 @@ class TextGameBotConfiguration {
                 }
 
                 command("start_in") {
-                    if (!checkAuthorized(message)) {
-                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
-                        return@command
-                    }
-
                     val location = Location.valueOf(args[0].uppercase())
                     val chatId = message.chat.id
                     val result = gameService.startNewGameForUser(chatId, location)
@@ -115,11 +86,6 @@ class TextGameBotConfiguration {
                 }
 
                 command("start") {
-                    if (!checkAuthorized(message)) {
-                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
-                        return@command
-                    }
-
                     val chatId = message.chat.id
                     val responseMessage = if (gameService.userHasGameStarted(chatId)) {
                         "У вас уже есть запущенная игра, прогресс в ней будет утерян. Перезапустить?"
@@ -143,11 +109,6 @@ class TextGameBotConfiguration {
                     ) {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
-                        if (!checkAuthorized(message)) {
-                            bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
-                            return@callbackQuery
-                        }
-
                         val result = gameService.chooseOption(chatId, callbackQuery.data)
 
                         editMessage(bot, message)
@@ -159,17 +120,33 @@ class TextGameBotConfiguration {
                     if (callbackQuery.data == "START_GAME") {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
-                        if (!checkAuthorized(message)) {
-                            bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
-                            return@callbackQuery
-                        }
-
                         val result = gameService.startNewGameForUser(chatId)
                         sendGameMessage(bot, chatId, result)
                     }
                 }
 
+
                 //test buttons
+
+                command("whereami") {
+                    val chatId = message.chat.id
+                    val result = gameService.getUserCurrentPlace(chatId)
+
+                    sendGameMessage(bot, chatId, result)
+                }
+                command("locations") {
+                    val chatId = message.chat.id
+                    val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
+                    val buttons = getLocationsButtons(gameState)
+                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "LOCATIONS", replyMarkup = buttons)
+                }
+                command("choices") {
+                    val chatId = message.chat.id
+                    val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
+                    val buttons = getChoicesButtons(gameState)
+                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "CHOICES", replyMarkup = buttons)
+                }
+
                 callbackQuery {
                     if (callbackQuery.data.startsWith("location")) {
                         val message = callbackQuery.message
