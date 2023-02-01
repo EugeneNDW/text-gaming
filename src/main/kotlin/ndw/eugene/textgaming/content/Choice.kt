@@ -1,6 +1,7 @@
 package ndw.eugene.textgaming.content
 
 enum class Choice {
+    TIP_MUSICIANS,
     SAD_SONG,
     FUNNY_SONG,
     EPIC_SONG,
@@ -8,9 +9,6 @@ enum class Choice {
     TEST,
     STARS_TALKING,
     HEARD_COMPANION_STORY,
-    OFFER_SOLACE,
-    OFFER_TRIBUTE,
-    OFFER_HOPE,
     BUY_TONIC,
     GIVE_TONIC_TO_SHEPHERD,
     FIORE_APPEARED,
@@ -19,7 +17,6 @@ enum class Choice {
     TIDY_YOURSELF,
     MERCHANT_STORY,
 
-    RESEARCH,
     WHAT_HAPPENED_TO_THE_LIBRARY,
     WENT_THROUGH_THE_STORM,
     MET_THE_HARPY,
@@ -29,7 +26,14 @@ enum class Choice {
     LEFT_SHEPHERD_TO_HARPIES,
     LEFT_SHEPHERD_TO_JUNGLE,
     BOY_FORCED,
-
+    WAS_IN_HARPY_ENCOUNTER,
+    WAS_IN_SHEPHERD_ENCOUNTER,
+    LIE_ABOUT_PLANTS,
+    LIE_ABOUT_ROCKS,
+    LIE_ABOUT_BEETLES,
+    GOT_THE_WIZARD,
+    GOT_THE_BOY,
+    GOT_THE_GIRL,
 
     //technical
     ASKED_DESTROYED_HOW,
@@ -37,4 +41,8 @@ enum class Choice {
     EXAMINED_SHELVES,
     TOOK_TABLET,
     EXAMINED_STATUE,
+    OFFER_SOLACE,
+    OFFER_TRIBUTE,
+    OFFER_HOPE,
+    RESEARCH,
 }

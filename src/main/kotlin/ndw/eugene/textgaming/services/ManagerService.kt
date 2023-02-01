@@ -17,6 +17,7 @@ class ManagerService(
         val location = Location.valueOf(locationName)
 
         game.location = location
+        game.currentConversationId = 0
         gameStateRepository.save(game)
     }
 

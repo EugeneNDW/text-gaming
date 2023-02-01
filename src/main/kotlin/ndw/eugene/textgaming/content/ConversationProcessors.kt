@@ -30,24 +30,6 @@ class ConversationProcessors(
     }
 
     private fun initProcessors() {
-        processorsById["changeLocationToSunkenLibraryInside"] = {
-            println("change location to sunken library inside") //todo make real location change when ready
-        }
-        processorsById["changeLocationToHarpiesLair"] = {
-            println("change location to harpie's lair") //todo make real location change when ready
-        }
-        processorsById["changeLocationToJungle"] = {
-            println("change location to jungle") //todo make real location change when ready
-        }
-        processorsById["changeLocationToStorm"] = {
-            locationService.changeLocationTo(it, Location.STORM)
-        }
-        processorsById["changeLocationToSunkenLibrary"] = {
-            locationService.changeLocationTo(it, Location.SUNKEN_LIBRARY_SHORE)
-        }
-        processorsById["changeLocationToShip"] = {
-            locationService.changeLocationTo(it, Location.SHIP)
-        }
         processorsById["changeLocationToAlleyways"] = {
             locationService.changeLocationTo(it, Location.ALLEYWAYS)
         }
@@ -59,6 +41,42 @@ class ConversationProcessors(
         }
         processorsById["changeLocationToDome"] = {
             locationService.changeLocationTo(it, Location.DOME)
+        }
+        processorsById["changeLocationToShip"] = {
+            locationService.changeLocationTo(it, Location.SHIP)
+        }
+        processorsById["changeLocationToStorm"] = {
+            locationService.changeLocationTo(it, Location.STORM)
+        }
+        processorsById["changeLocationToSunkenLibrary"] = {
+            locationService.changeLocationTo(it, Location.SUNKEN_LIBRARY_SHORE)
+        }
+        processorsById["changeLocationToJungle"] = {
+            locationService.changeLocationTo(it, Location.JUNGLE)
+        }
+        processorsById["changeLocationToHarpyEncounter"] = {
+            locationService.changeLocationTo(it, Location.HARPY_ENCOUNTER)
+        }
+        processorsById["changeLocationToShepherdEncounter"] = {
+            locationService.changeLocationTo(it, Location.SHEPHERD_ENCOUNTER)
+        }
+        processorsById["changeLocationToSunkenLibraryInside"] = {
+            locationService.changeLocationTo(it, Location.SUNKEN_LIBRARY_INSIDE)
+        }
+        processorsById["changeLocationToHarpiesLair"] = {
+            locationService.changeLocationTo(it, Location.HARPIES_LAIR)
+        }
+        processorsById["changeLocationToBoyEpilogue"] = {
+            locationService.changeLocationTo(it, Location.BOY_EPILOGUE)
+        }
+        processorsById["changeLocationToWizardEpilogue"] = {
+            locationService.changeLocationTo(it, Location.WIZARD_EPILOGUE)
+        }
+        processorsById["changeLocationToTowerEpilogue"] = {
+            locationService.changeLocationTo(it, Location.TOWER_EPILOGUE)
+        }
+        processorsById["changeLocationToShipEpilogue"] = {
+            locationService.changeLocationTo(it, Location.SHIP_EPILOGUE)
         }
         processorsById["memorizeFioreAppeared"] = {
             choiceService.addChoice(it, Choice.FIORE_APPEARED)
@@ -132,20 +150,51 @@ class ConversationProcessors(
         processorsById["memorizePickStar"] = {
             choiceService.addChoice(it, Choice.PICK_STAR)
         }
+        processorsById["memorizeWasInHarpyEncounter"] = {
+            choiceService.addChoice(it, Choice.WAS_IN_HARPY_ENCOUNTER)
+        }
+        processorsById["memorizeWasInShepherdEncounter"] = {
+            choiceService.addChoice(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
+        }
+        processorsById["memorizeLiedAboutPlants"] = {
+            choiceService.addChoice(it, Choice.LIE_ABOUT_PLANTS)
+        }
+        processorsById["memorizeLiedAboutRocks"] = {
+            choiceService.addChoice(it, Choice.LIE_ABOUT_ROCKS)
+        }
+        processorsById["memorizeLiedAboutBeetles"] = {
+            choiceService.addChoice(it, Choice.LIE_ABOUT_BEETLES)
+        }
+        processorsById["memorizeLeftShepherdToLibrary"] = {
+            choiceService.addChoice(it, Choice.LEFT_SHEPHERD_TO_LIBRARY)
+        }
+        processorsById["memorizeLeftShepherdToHarpies"] = {
+            choiceService.addChoice(it, Choice.LEFT_SHEPHERD_TO_HARPIES)
+        }
+        processorsById["memorizeLeftShepherdToJungle"] = {
+            choiceService.addChoice(it, Choice.LEFT_SHEPHERD_TO_JUNGLE)
+        }
+        processorsById["memorizeGaveShepherdTonic"] = {
+            choiceService.addChoice(it, Choice.GIVE_TONIC_TO_SHEPHERD)
+        }
+        processorsById["memorizeTipMusicians"] = {
+            choiceService.addChoice(it, Choice.TIP_MUSICIANS)
+        }
+        processorsById["memorizeGotWizard"] = {
+            choiceService.addChoice(it, Choice.GOT_THE_WIZARD)
+        }
+        processorsById["memorizeGotBoy"] = {
+            choiceService.addChoice(it, Choice.GOT_THE_BOY)
+        }
+        processorsById["memorizeGotGirl"] = {
+            choiceService.addChoice(it, Choice.GOT_THE_GIRL)
+        }
         processorsById["endGame"] = {
             //todo сделать механизм завершения игры
         }
     }
 
     private fun initOptionConditions() {
-        optionsById["testCondition"] = {
-            true
-        }
-
-        optionsById["testNotCondition"] = {
-            false
-        }
-
         optionsById["secondOptionChosen"] = {
             choiceService.checkChoiceHasBeenMade(it, Choice.TEST)
         }
@@ -282,19 +331,16 @@ class ConversationProcessors(
             choiceService.checkChoiceHasBeenMade(it, Choice.TOOK_TABLET)
         }
         optionsById["checkLeftShepherdToLibrary"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_LIBRARY) //todo добавить в процессор который запомнит это во встрече с SHEPHERD
+            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_LIBRARY)
         }
         optionsById["checkLeftShepherdToHarpies"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_HARPIES) //todo добавить в процессор который запомнит это во встрече с SHEPHERD
+            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_HARPIES)
         }
         optionsById["checkLeftShepherdToJungle"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_JUNGLE) //todo добавить в процессор который запомнит это во встрече с SHEPHERD
-        }
-        optionsById["checkShepherdIsFriend"] = {
-            true //todo сделать запоминалку и CHOICE
+            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_JUNGLE)
         }
         optionsById["checkGaveShepherdTonic"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.GIVE_TONIC_TO_SHEPHERD) //todo добавить в процессор который запомнит это в SUNKEN_LIBRARY_INSIDE
+            choiceService.checkChoiceHasBeenMade(it, Choice.GIVE_TONIC_TO_SHEPHERD)
         }
         optionsById["checkSpyglass"] = {
             choiceService.checkChoiceHasBeenMade(it, Choice.SPYGLASS)
@@ -320,24 +366,82 @@ class ConversationProcessors(
         optionsById["checkDidntForceBoy"] = {
             !choiceService.checkChoiceHasBeenMade(it, Choice.BOY_FORCED)
         }
-
-        optionsById["checkZeroFound"] = {
-            true //todo реализация
-        }
-        optionsById["checkOneFound"] = {
-            true //todo реализация
-        }
-        optionsById["checkTwoFound"] = {
-            true //todo реализация
-        }
-
         optionsById["checkLiedAboutBeetles"] = {
-            true //todo реализация
+            choiceService.checkChoiceHasBeenMade(it, Choice.LIE_ABOUT_BEETLES)
         }
         optionsById["checkLiedAboutRocks"] = {
-            true //todo реализация
+            choiceService.checkChoiceHasBeenMade(it, Choice.LIE_ABOUT_ROCKS)
         }
         optionsById["checkLiedAboutPlants"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.LIE_ABOUT_PLANTS)
+        }
+        optionsById["checkLibraryRouteAndNoEncounter"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
+        }
+        optionsById["checkStormRouteAndNoEncounter"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.WENT_THROUGH_THE_STORM)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
+        }
+        optionsById["checkWasInEncounter"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
+                || choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
+        }
+        optionsById["checkWasInShepherdEncounter"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
+        }
+        optionsById["checkWasntInShepherdEncounter"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
+        }
+        optionsById["checkWasInHarpyEncounter"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
+        }
+        optionsById["checkWasntInHarpyEncounter"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
+        }
+        optionsById["checkTipMusicians"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.TIP_MUSICIANS)
+        }
+        optionsById["checkDidntTipMusicians"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.TIP_MUSICIANS)
+        }
+
+        optionsById["checkGotNoOne"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
+        }
+        optionsById["checkGotOnlyBoy"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
+        }
+        optionsById["checkGotOnlyGirl"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
+        }
+        optionsById["checkGotOnlyWizard"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
+        }
+        optionsById["checkGotBoyAndGirl"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
+                && choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
+        }
+        optionsById["checkGotWizardAndGirl"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
+                && choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
+                && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
+        }
+        optionsById["checkShepherdIsFriend"] = {
+            true //todo реализация
+        }
+        optionsById["checkBadChoices"] = {
             true //todo реализация
         }
     }
