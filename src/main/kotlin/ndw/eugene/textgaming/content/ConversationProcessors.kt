@@ -1,17 +1,23 @@
 package ndw.eugene.textgaming.content
 
+import ndw.eugene.textgaming.data.entity.CounterType
 import ndw.eugene.textgaming.data.entity.GameState
 import ndw.eugene.textgaming.services.ChoiceService
+import ndw.eugene.textgaming.services.CounterService
 import ndw.eugene.textgaming.services.LocationService
 import org.springframework.stereotype.Component
 
 typealias ConversationProcessor = (GameState) -> Unit
 typealias OptionCondition = (GameState) -> Boolean
 
+private const val BAD_GUY_POINTS_REQUIRED = 5
+private const val SHEPHERD_IS_FRIEND_MIN_POINTS = 3
+
 @Component
 class ConversationProcessors(
     private val choiceService: ChoiceService,
-    private val locationService: LocationService
+    private val locationService: LocationService,
+    private val counterService: CounterService,
 ) {
     private val processorsById = mutableMapOf<String, ConversationProcessor>()
     private val optionsById = mutableMapOf<String, OptionCondition>()
@@ -189,6 +195,19 @@ class ConversationProcessors(
         processorsById["memorizeGotGirl"] = {
             choiceService.addChoice(it, Choice.GOT_THE_GIRL)
         }
+        processorsById["increaseBoyRelationshipCounter"] = {
+            counterService.increaseCounter(it, CounterType.BOY_RELATIONSHIP)
+        }
+        processorsById["decreaseBoyRelationshipCounter"] = {
+            counterService.decreaseCounter(it, CounterType.BOY_RELATIONSHIP)
+        }
+        processorsById["increaseBadGuyCounter"] = {
+            counterService.increaseCounter(it, CounterType.BAD_GUY)
+        }
+        processorsById["decreaseBadGuyCounter"] = {
+            counterService.decreaseCounter(it, CounterType.BAD_GUY)
+        }
+
         processorsById["endGame"] = {
             //todo сделать механизм завершения игры
         }
@@ -439,10 +458,10 @@ class ConversationProcessors(
                 && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
         }
         optionsById["checkShepherdIsFriend"] = {
-            true //todo реализация
+            counterService.getCounterValue(it, CounterType.BOY_RELATIONSHIP) >= SHEPHERD_IS_FRIEND_MIN_POINTS
         }
         optionsById["checkBadChoices"] = {
-            true //todo реализация
+            counterService.getCounterValue(it, CounterType.BAD_GUY) == BAD_GUY_POINTS_REQUIRED
         }
     }
 }

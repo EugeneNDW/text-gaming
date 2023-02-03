@@ -1,5 +1,6 @@
 package ndw.eugene.textgaming.data.entity
 
+import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
@@ -11,20 +12,23 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import ndw.eugene.textgaming.content.Choice
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
-@Table(name = "game_choice")
+@Table(name = "game_counter")
 @EntityListeners(AuditingEntityListener::class)
-class GameChoice {
+class GameCounter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
     @Enumerated(EnumType.STRING)
-    lateinit var choice: Choice
+    @Column(nullable = false, name = "counter_type")
+    lateinit var counterType: CounterType
+
+    @Column(nullable = false, name = "counter_value")
+    var counterValue: Int = 0
 
     @ManyToOne
     @JoinColumn(name = "game_id")
@@ -35,12 +39,16 @@ class GameChoice {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is GameChoice) return false
+        if (other !is GameCounter) return false
 
         return id != null && id == other.id
     }
 
     override fun hashCode(): Int {
-        return GameChoice::class.hashCode()
+        return GameCounter::class.hashCode()
     }
+}
+
+enum class CounterType {
+    BOY_RELATIONSHIP, BAD_GUY
 }

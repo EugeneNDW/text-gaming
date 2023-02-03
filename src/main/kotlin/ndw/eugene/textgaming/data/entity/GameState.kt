@@ -41,6 +41,9 @@ class GameState {
     @OneToMany(mappedBy = "gameState", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     val gameHistory: MutableSet<GameHistory> = mutableSetOf()
 
+    @OneToMany(mappedBy = "gameState", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+    val gameCounters: MutableSet<GameCounter> = mutableSetOf()
+
     @Embedded
     val auditInfo: AuditInfo = AuditInfo()
 
@@ -62,6 +65,16 @@ class GameState {
     fun removeHistory(history: GameHistory) {
         history.gameState = null
         gameHistory.remove(history)
+    }
+
+    fun addCounter(counter: GameCounter) {
+        counter.gameState = this
+        gameCounters.add(counter)
+    }
+
+    fun removeCounter(counter: GameCounter) {
+        counter.gameState = null
+        gameCounters.remove(counter)
     }
 
     override fun equals(other: Any?): Boolean {
