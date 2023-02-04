@@ -24,6 +24,8 @@ import org.springframework.context.annotation.Configuration
 
 private val logger = KotlinLogging.logger {}
 
+private val authorizedUsers = mutableListOf<String>()
+
 @Configuration
 class TextGameBotConfiguration {
     @Bean
@@ -49,15 +51,19 @@ class TextGameBotConfiguration {
 
                 //authorization
                 message {
-                    if (!checkAuthorized(message)) {
+                    val username = update.message?.from?.username ?: return@message
+
+                    if (!(checkAdmin(message) || checkAuthorized(username))) {
                         bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
                         update.consume()
                     }
                 }
                 callbackQuery {
                     val message = callbackQuery.message
+                    val username = callbackQuery.from.username ?: return@callbackQuery
                     val chatId = message?.chat?.id ?: return@callbackQuery
-                    if (!checkAuthorized(message)) {
+
+                    if (!(checkAdmin(message) || checkAuthorized(username))) {
                         bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
                         update.consume()
                     }
@@ -69,22 +75,12 @@ class TextGameBotConfiguration {
 
                     bot.sendMessage(ChatId.fromId(message.chat.id), "we got your report and we'll fix it asap")
                 }
-
                 command("feedback") {
                     val feedbackText = args.joinToString(" ")
                     feedbackService.writeFeedback(message.chat.id, feedbackText)
 
                     bot.sendMessage(ChatId.fromId(message.chat.id), "ty for feedback <3")
                 }
-
-                command("start_in") {
-                    val location = Location.valueOf(args[0].uppercase())
-                    val chatId = message.chat.id
-                    val result = gameService.startNewGameForUser(chatId, location)
-
-                    sendGameMessage(bot, chatId, result)
-                }
-
                 command("start") {
                     val chatId = message.chat.id
                     val responseMessage = if (gameService.userHasGameStarted(chatId)) {
@@ -112,7 +108,6 @@ class TextGameBotConfiguration {
                         sendGameMessage(bot, chatId, result)
                     }
                 }
-
                 callbackQuery {
                     if (callbackQuery.data == ButtonId.START.name) {
                         val message = callbackQuery.message
@@ -123,25 +118,51 @@ class TextGameBotConfiguration {
                 }
 
                 //test buttons
+                command("start_in") {
+                    if (!checkAdmin(message)) return@command
+                    val location = Location.valueOf(args[0].uppercase())
+                    val chatId = message.chat.id
+                    val result = gameService.startNewGameForUser(chatId, location)
+
+                    sendGameMessage(bot, chatId, result)
+                }
                 command("whereami") {
+                    if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val result = gameService.getUserCurrentPlace(chatId)
 
                     sendGameMessage(bot, chatId, result)
                 }
                 command("locations") {
+                    if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
                     val buttons = getLocationsButtons(gameState)
                     bot.sendMessage(chatId = ChatId.fromId(chatId), text = "LOCATIONS", replyMarkup = buttons)
                 }
                 command("choices") {
+                    if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
                     val buttons = getChoicesButtons(gameState)
                     bot.sendMessage(chatId = ChatId.fromId(chatId), text = "CHOICES", replyMarkup = buttons)
                 }
+                command("permit") {
+                    if (!checkAdmin(message)) return@command
+                    val chatId = message.chat.id
+                    val username = args[0]
 
+                    authorizedUsers.add(username)
+                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "open service for user with username: $username")
+                }
+                command("forbid") {
+                    if (!checkAdmin(message)) return@command
+                    val chatId = message.chat.id
+                    val username = args[0]
+
+                    authorizedUsers.remove(username)
+                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "close service for user with username: $username")
+                }
                 callbackQuery {
                     if (callbackQuery.data.startsWith(ButtonId.LOCATION.name)) {
                         val message = callbackQuery.message
@@ -160,7 +181,6 @@ class TextGameBotConfiguration {
                         )
                     }
                 }
-
                 callbackQuery {
                     if (callbackQuery.data.startsWith(ButtonId.CHOOSE.name)) {
                         val message = callbackQuery.message
@@ -179,7 +199,6 @@ class TextGameBotConfiguration {
                         )
                     }
                 }
-
                 callbackQuery {
                     if (callbackQuery.data.startsWith(ButtonId.UNCHOOSE.name)) {
                         val message = callbackQuery.message
@@ -198,6 +217,7 @@ class TextGameBotConfiguration {
                         )
                     }
                 }
+
             }
         }
     }
@@ -226,11 +246,15 @@ class TextGameBotConfiguration {
         }
     }
 
-    private fun checkAuthorized(message: Message): Boolean {
-        val allowedUsers = listOf(95263058L)
+    private fun checkAdmin(message: Message): Boolean {
+        val allowedUsers = listOf(95263058L, 348613726L)
 
         val userID = message.chat.id
         return allowedUsers.contains(userID)
+    }
+
+    private fun checkAuthorized(username: String): Boolean {
+        return authorizedUsers.contains(username)
     }
 
     private fun decideLogLevel(logLevel: String): LogLevel {
