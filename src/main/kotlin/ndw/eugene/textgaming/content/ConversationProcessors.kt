@@ -195,6 +195,10 @@ class ConversationProcessors(
         processorsById["memorizeGotGirl"] = {
             choiceService.addChoice(it, Choice.GOT_THE_GIRL)
         }
+        processorsById["memorizeCanEarnMoney"] = {
+            choiceService.addChoice(it, Choice.CAN_EARN_MONEY)
+        }
+
         processorsById["increaseBoyRelationshipCounter"] = {
             counterService.increaseCounter(it, CounterType.BOY_RELATIONSHIP)
         }
@@ -425,6 +429,9 @@ class ConversationProcessors(
         }
         optionsById["checkDidntTipMusicians"] = {
             !choiceService.checkChoiceHasBeenMade(it, Choice.TIP_MUSICIANS)
+        }
+        optionsById["checkCanEarnMoney"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.CAN_EARN_MONEY)
         }
 
         optionsById["checkGotNoOne"] = {
