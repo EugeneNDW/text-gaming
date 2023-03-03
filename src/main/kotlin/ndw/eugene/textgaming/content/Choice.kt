@@ -45,5 +45,6 @@ enum class Choice {
     OFFER_TRIBUTE,
     OFFER_HOPE,
     RESEARCH,
-    CAN_EARN_MONEY
+    CAN_EARN_MONEY,
+    HEARD_ABOUT_PROPHET
 }

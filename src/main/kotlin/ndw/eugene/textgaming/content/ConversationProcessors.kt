@@ -132,6 +132,9 @@ class ConversationProcessors(
         processorsById["memorizeResearch"] = {
             choiceService.addChoice(it, Choice.RESEARCH)
         }
+        processorsById["memorizeWentThroughStorm"] = {
+            choiceService.addChoice(it, Choice.WENT_THROUGH_THE_STORM)
+        }
         processorsById["memorizeWhatHappenedToTheLibrary"] = {
             choiceService.addChoice(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
         }
@@ -197,6 +200,9 @@ class ConversationProcessors(
         }
         processorsById["memorizeCanEarnMoney"] = {
             choiceService.addChoice(it, Choice.CAN_EARN_MONEY)
+        }
+        processorsById["memorizeHeardAboutProphet"] = {
+            choiceService.addChoice(it, Choice.HEARD_ABOUT_PROPHET)
         }
 
         processorsById["increaseBoyRelationshipCounter"] = {
@@ -432,6 +438,15 @@ class ConversationProcessors(
         }
         optionsById["checkCanEarnMoney"] = {
             choiceService.checkChoiceHasBeenMade(it, Choice.CAN_EARN_MONEY)
+        }
+        optionsById["checkCantEarnMoney"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.CAN_EARN_MONEY)
+        }
+        optionsById["checkHeardAboutProphet"] = {
+            choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_ABOUT_PROPHET)
+        }
+        optionsById["checkDidntHearAboutProphet"] = {
+            !choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_ABOUT_PROPHET)
         }
 
         optionsById["checkGotNoOne"] = {
