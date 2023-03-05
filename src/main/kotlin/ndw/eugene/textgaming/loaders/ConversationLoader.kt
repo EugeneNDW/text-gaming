@@ -27,7 +27,10 @@ import java.util.stream.Collectors.toList
 private val logger = KotlinLogging.logger {}
 
 @Component
-class ConversationLoader(private val conversationProcessors: ConversationProcessors) {
+class ConversationLoader(
+    private val conversationProcessors: ConversationProcessors,
+    private val illustrationsLoader: IllustrationsLoader
+) {
 
     @Value("classpath:conversations/*.json")
     lateinit var resources: Array<Resource>
@@ -83,32 +86,28 @@ class ConversationLoader(private val conversationProcessors: ConversationProcess
     }
 
     private fun buildConversationPart(conversationPartDto: ConversationPartDto): ConversationPart {
-        val conversationPart = ConversationPart(
+        val illustration = illustrationsLoader.getIllustration(conversationPartDto.illustration)
+        val processor = conversationProcessors.getProcessorById(conversationPartDto.processorId)
+
+        return ConversationPart(
             id = conversationPartDto.id,
             character = conversationPartDto.character,
             text = conversationPartDto.text,
-            illustration = conversationPartDto.illustration
+            illustration = illustration,
+            executable = processor
         )
-
-        if (conversationPartDto.processorId != null && conversationPartDto.processorId.isNotBlank()) {
-            conversationPart.executable = conversationProcessors.getProcessorById(conversationPartDto.processorId)
-        }
-
-        return conversationPart
     }
 
     private fun buildOption(optionDto: OptionDto): Option {
-        val option = Option(
+        val optionCondition = conversationProcessors.getOptionConditionById(optionDto.optionConditionId)
+
+        return Option(
             uuid = optionDto.uuid,
             fromId = optionDto.fromId,
             toId = optionDto.toId,
             optionText = optionDto.optionText,
+            condition = optionCondition
         )
-        if (optionDto.optionConditionId != null && optionDto.optionConditionId.isNotBlank()) {
-            option.condition = conversationProcessors.getOptionConditionById(optionDto.optionConditionId)
-        }
-
-        return option
     }
 }
 

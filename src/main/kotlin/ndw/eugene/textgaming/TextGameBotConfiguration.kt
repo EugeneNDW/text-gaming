@@ -105,7 +105,7 @@ class TextGameBotConfiguration {
                         val result = gameService.chooseOption(chatId, optionId)
 
                         editMessage(bot, message)
-                        sendGameMessage(bot, chatId, result)
+                        bot.sendGameMessage(chatId, result)
                     }
                 }
                 callbackQuery {
@@ -113,7 +113,7 @@ class TextGameBotConfiguration {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
                         val result = gameService.startNewGameForUser(chatId)
-                        sendGameMessage(bot, chatId, result)
+                        bot.sendGameMessage(chatId, result)
                     }
                 }
 
@@ -124,14 +124,14 @@ class TextGameBotConfiguration {
                     val chatId = message.chat.id
                     val result = gameService.startNewGameForUser(chatId, location)
 
-                    sendGameMessage(bot, chatId, result)
+                    bot.sendGameMessage(chatId, result)
                 }
                 command("whereami") {
                     if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val result = gameService.getUserCurrentPlace(chatId)
 
-                    sendGameMessage(bot, chatId, result)
+                    bot.sendGameMessage(chatId, result)
                 }
                 command("locations") {
                     if (!checkAdmin(message)) return@command
@@ -222,22 +222,21 @@ class TextGameBotConfiguration {
         }
     }
 
-    private fun sendGameMessage(bot: Bot, chatId: Long, message: GameMessage) {
+    private fun Bot.sendGameMessage(chatId: Long, message: GameMessage) {
         val availableOptions = message.options.filter { it.available }
         val optionButtons = optionsToButtons(availableOptions)
         val formatResponse = formatResponse(message.currentConversation, availableOptions)
-        val illustration = message.currentConversation.illustration
 
-        if (illustration != null && illustration.isNotBlank()) {
-            bot.sendPhoto(
+        if (message.currentConversation.illustration != null) {
+            sendPhoto(
                 chatId = ChatId.fromId(chatId),
-                photo = TelegramFile.ByByteArray(readBytesFromFile(illustration), illustration),
+                photo = TelegramFile.ByByteArray(message.currentConversation.illustration, "illustration.png"),
                 caption = formatResponse,
                 replyMarkup = optionButtons,
                 parseMode = ParseMode.HTML
             )
         } else {
-            bot.sendMessage(
+            sendMessage(
                 chatId = ChatId.fromId(chatId),
                 text = formatResponse,
                 replyMarkup = optionButtons,

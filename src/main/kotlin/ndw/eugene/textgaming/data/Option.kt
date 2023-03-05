@@ -8,7 +8,7 @@ data class Option(
     val fromId: Long,
     val toId: Long,
     val optionText: String,
-    var condition: OptionCondition = { true }
+    val condition: OptionCondition = { true }
 )
 
 data class UserOption(

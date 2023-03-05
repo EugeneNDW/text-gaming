@@ -27,11 +27,15 @@ class ConversationProcessors(
         initOptionConditions()
     }
 
-    fun getOptionConditionById(id: String): OptionCondition {
+    fun getOptionConditionById(id: String?): OptionCondition {
+        if (id.isNullOrBlank()) return { true }
+
         return optionsById[id] ?: throw IllegalArgumentException("there is no option with id: $id")
     }
 
-    fun getProcessorById(id: String): ConversationProcessor {
+    fun getProcessorById(id: String?): ConversationProcessor {
+        if (id.isNullOrBlank()) return { }
+
         return processorsById[id] ?: throw IllegalArgumentException("there is no processor with id: $id")
     }
 
