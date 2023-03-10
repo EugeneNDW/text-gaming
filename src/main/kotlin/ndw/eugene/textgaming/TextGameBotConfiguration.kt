@@ -83,7 +83,7 @@ class TextGameBotConfiguration {
                 }
                 command("start") {
                     val chatId = message.chat.id
-                    val responseMessage = if (gameService.userHasGameStarted(chatId)) {
+                    val responseMessage = if (gameService.userHasGameActive(chatId)) {
                         "У вас уже есть запущенная игра, прогресс в ней будет утерян. Перезапустить?"
                     } else {
                         "Добро пожаловать, чтобы начать играть нажмите кнопку"

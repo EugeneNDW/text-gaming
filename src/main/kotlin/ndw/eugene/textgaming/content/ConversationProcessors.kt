@@ -221,9 +221,9 @@ class ConversationProcessors(
         processorsById["decreaseBadGuyCounter"] = {
             counterService.decreaseCounter(it, CounterType.BAD_GUY)
         }
-
         processorsById["endGame"] = {
-            //todo сделать механизм завершения игры
+            it.isEnded = true
+            locationService.changeLocationTo(it, Location.END)
         }
     }
 

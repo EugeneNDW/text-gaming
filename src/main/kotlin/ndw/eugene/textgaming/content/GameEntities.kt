@@ -16,6 +16,9 @@ enum class GameCharacter {
     CAPTAIN,
     HARPY,
     HARPIES,
+
+    //technical
+    ADMIN
 }
 
 enum class Location {
@@ -36,5 +39,7 @@ enum class Location {
     BOY_EPILOGUE,
     WIZARD_EPILOGUE,
     TOWER_EPILOGUE,
-    SHIP_EPILOGUE
+    SHIP_EPILOGUE,
+
+    END
 }

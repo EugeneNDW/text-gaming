@@ -1,0 +1,2 @@
+ALTER TABLE game_state
+ADD COLUMN is_ended BOOLEAN DEFAULT FALSE;

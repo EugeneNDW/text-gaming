@@ -25,6 +25,9 @@ class GameState {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
+    @Column(nullable = false, name = "is_ended")
+    var isEnded: Boolean = false
+
     @Column(nullable = false, name = "user_id")
     var userId: Long = 0
 

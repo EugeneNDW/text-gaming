@@ -30,8 +30,9 @@ class GameService(
         logger.info { "game service was initialized" }
     }
 
-    fun userHasGameStarted(userId: Long): Boolean {
-        return getUsersCurrentGame(userId) != null //todo отдельный запрос к репо, который проверяет есть ли у нас начатая игра
+    fun userHasGameActive(userId: Long): Boolean {
+        val usersCurrentGame = getUsersCurrentGame(userId)
+        return usersCurrentGame != null && !usersCurrentGame.isEnded //todo отдельный запрос к репо, который проверяет есть ли у нас начатая игра
     }
 
     fun startNewGameForUser(userId: Long, location: Location = Location.DOCKS): GameMessage {
