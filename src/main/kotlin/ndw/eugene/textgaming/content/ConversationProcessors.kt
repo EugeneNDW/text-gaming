@@ -151,9 +151,6 @@ class ConversationProcessors(
         processorsById["memorizeSpyglass"] = {
             choiceService.addChoice(it, Choice.SPYGLASS)
         }
-        processorsById["memorizeTookTablet"] = {
-            choiceService.addChoice(it, Choice.TOOK_TABLET)
-        }
         processorsById["memorizeExaminedStatue"] = {
             choiceService.addChoice(it, Choice.EXAMINED_STATUE)
         }
@@ -356,12 +353,6 @@ class ConversationProcessors(
         }
         optionsById["checkShelvesExamined"] = {
             choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_SHELVES)
-        }
-        optionsById["checkTabletIsNotTaken"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.TOOK_TABLET)
-        }
-        optionsById["checkTabletIsTaken"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.TOOK_TABLET)
         }
         optionsById["checkLeftShepherdToLibrary"] = {
             choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_LIBRARY)

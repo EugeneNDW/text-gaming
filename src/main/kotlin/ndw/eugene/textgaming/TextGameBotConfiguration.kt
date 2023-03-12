@@ -54,7 +54,7 @@ class TextGameBotConfiguration {
                     val username = update.message?.from?.username ?: return@message
 
                     if (!(checkAdmin(message) || checkAuthorized(username))) {
-                        bot.sendMessage(ChatId.fromId(message.chat.id), "знакомы?")
+                        bot.sendMessage(ChatId.fromId(message.chat.id), UNAUTHORIZED_MESSAGE)
                         update.consume()
                     }
                 }
@@ -64,7 +64,7 @@ class TextGameBotConfiguration {
                     val chatId = message?.chat?.id ?: return@callbackQuery
 
                     if (!(checkAdmin(message) || checkAuthorized(username))) {
-                        bot.sendMessage(ChatId.fromId(chatId), "знакомы?")
+                        bot.sendMessage(ChatId.fromId(chatId), UNAUTHORIZED_MESSAGE)
                         update.consume()
                     }
                 }
@@ -73,20 +73,20 @@ class TextGameBotConfiguration {
                     val reportText = args.joinToString(" ")
                     feedbackService.writeReport(message.chat.id, reportText)
 
-                    bot.sendMessage(ChatId.fromId(message.chat.id), "we got your report and we'll fix it asap")
+                    bot.sendMessage(ChatId.fromId(message.chat.id), REPORT_RECEIVED_MESSAGE)
                 }
                 command("feedback") {
                     val feedbackText = args.joinToString(" ")
                     feedbackService.writeFeedback(message.chat.id, feedbackText)
 
-                    bot.sendMessage(ChatId.fromId(message.chat.id), "ty for feedback <3")
+                    bot.sendMessage(ChatId.fromId(message.chat.id), FEEDBACK_RECEIVED_MESSAGE)
                 }
                 command("start") {
                     val chatId = message.chat.id
                     val responseMessage = if (gameService.userHasGameActive(chatId)) {
-                        "У вас уже есть запущенная игра, прогресс в ней будет утерян. Перезапустить?"
+                        GAME_STARTED_MESSAGE
                     } else {
-                        "Добро пожаловать, чтобы начать играть нажмите кнопку"
+                        WELCOME_MESSAGE
                     }
 
                     val startGameButton = createStartGameButton()

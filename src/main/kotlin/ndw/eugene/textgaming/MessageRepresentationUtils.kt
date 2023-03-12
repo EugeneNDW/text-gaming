@@ -15,9 +15,16 @@ import ndw.eugene.textgaming.data.entity.GameState
 
 private const val DEFAULT_OPTION_TEXT = "..."
 private const val DEFAULT_OPTION_BUTTON_TEXT = "continue..."
-private const val NEW_GAME_BUTTON_TEXT = "start new game"
+private const val NEW_GAME_BUTTON_TEXT = "Embark on another ludicrous journey"
 private const val TEXT_OPTIONS_DELIMITER = "\n\n"
 private const val CHARACTER_TEXT_DELIMITER = "\n"
+
+const val UNAUTHORIZED_MESSAGE = " Your Wayfarer Permit seems to be forfeit. Please, authorize yourself for the Admiralty."
+const val REPORT_RECEIVED_MESSAGE = "The Admiralty has received your report. It will be considered."
+const val FEEDBACK_RECEIVED_MESSAGE = "Thank you for your feedback! The Admiralty will treat it with the utmost attention."
+const val GAME_STARTED_MESSAGE = "Your journey has already begun. If you restart, the progress will be lost."
+const val WELCOME_MESSAGE = "Welcome to the World. Don’t get lost. Forget who you are."
+
 const val BUTTON_ID_DELIMITER = ":"
 
 enum class ButtonId {
