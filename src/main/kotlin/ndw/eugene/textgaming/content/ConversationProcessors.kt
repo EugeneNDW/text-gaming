@@ -205,6 +205,9 @@ class ConversationProcessors(
         processorsById["memorizeHeardAboutProphet"] = {
             choiceService.addChoice(it, Choice.HEARD_ABOUT_PROPHET)
         }
+        processorsById["memorizeBoyForced"] = {
+            choiceService.addChoice(it, Choice.BOY_FORCED)
+        }
 
         processorsById["increaseBoyRelationshipCounter"] = {
             counterService.increaseCounter(it, CounterType.BOY_RELATIONSHIP)
