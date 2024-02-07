@@ -24,6 +24,15 @@ const val REPORT_RECEIVED_MESSAGE = "The Admiralty has received your report. It 
 const val FEEDBACK_RECEIVED_MESSAGE = "Thank you for your feedback! The Admiralty will treat it with the utmost attention."
 const val GAME_STARTED_MESSAGE = "Your journey has already begun. If you restart, the progress will be lost."
 const val WELCOME_MESSAGE = "Welcome to the World. Don’t get lost. Forget who you are."
+const val COPYRIGHT_MESSAGE =
+    """
+    <b>Copyright © 2024 Sofia Ezdina. All Rights Reserved.</b>
+    
+Welcome to The Navigator! This game and all its parts (like stories, characters, and graphics) are created by me, Sofia Ezdina, and are protected by law. You're welcome to play this game for your own fun, but please don't copy, share, or sell any part of it without my permission.
+
+Enjoy the adventure, and if you need to reach out, contact me at godhasleft@gmail.com
+"""
+
 
 const val BUTTON_ID_DELIMITER = ":"
 

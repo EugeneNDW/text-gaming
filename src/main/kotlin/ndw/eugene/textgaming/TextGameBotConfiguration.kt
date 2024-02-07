@@ -69,6 +69,13 @@ class TextGameBotConfiguration {
                     }
                 }
 
+                command("copyright") {
+                    bot.sendMessage(
+                        chatId = ChatId.fromId(message.chat.id),
+                        text = COPYRIGHT_MESSAGE,
+                        parseMode = ParseMode.HTML
+                    )
+                }
                 command("report") {
                     val reportText = args.joinToString(" ")
                     feedbackService.writeReport(message.chat.id, reportText)
