@@ -15,6 +15,7 @@ import mu.KotlinLogging
 import ndw.eugene.textgaming.content.Choice
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.GameMessage
+import ndw.eugene.textgaming.services.AuthService
 import ndw.eugene.textgaming.services.FeedbackService
 import ndw.eugene.textgaming.services.GameService
 import ndw.eugene.textgaming.services.ManagerService
@@ -24,7 +25,6 @@ import org.springframework.context.annotation.Configuration
 
 private val logger = KotlinLogging.logger {}
 
-private val authorizedUsers = mutableListOf<String>()
 
 @Configuration
 class TextGameBotConfiguration {
@@ -34,7 +34,8 @@ class TextGameBotConfiguration {
         @Value("\${application.bot.loglevel}") botLogLevel: String,
         gameService: GameService,
         managerService: ManagerService,
-        feedbackService: FeedbackService
+        feedbackService: FeedbackService,
+        authService: AuthService
     ): Bot {
         return bot {
             logLevel = decideLogLevel(botLogLevel)
@@ -51,21 +52,19 @@ class TextGameBotConfiguration {
 
                 //authorization
                 message {
-                    val username = update.message?.from?.username ?: return@message
-
-                    if (!(checkAdmin(message) || checkAuthorized(username))) {
-                        bot.sendMessage(ChatId.fromId(message.chat.id), UNAUTHORIZED_MESSAGE)
-                        update.consume()
+                    val username = message.from?.username ?: ""
+                    val chatId = message.chat.id
+                    if (!(authService.checkAuthorized(chatId))) {
+                        authService.createUser(chatId, username)
                     }
                 }
                 callbackQuery {
                     val message = callbackQuery.message
-                    val username = callbackQuery.from.username ?: return@callbackQuery
+                    val username = callbackQuery.from.username ?: ""
                     val chatId = message?.chat?.id ?: return@callbackQuery
 
-                    if (!(checkAdmin(message) || checkAuthorized(username))) {
-                        bot.sendMessage(ChatId.fromId(chatId), UNAUTHORIZED_MESSAGE)
-                        update.consume()
+                    if (!(authService.checkAuthorized(chatId))) {
+                        authService.createUser(chatId, username)
                     }
                 }
 
@@ -125,6 +124,12 @@ class TextGameBotConfiguration {
                 }
 
                 //test buttons
+                command("users") {
+                    val chatId = message.chat.id
+                    var result = ""
+                    authService.getAllUsers().forEach { result = result + "," + it.id }
+                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = result)
+                }
                 command("start_in") {
                     if (!checkAdmin(message)) return@command
                     val location = Location.valueOf(args[0].uppercase())
@@ -153,22 +158,6 @@ class TextGameBotConfiguration {
                     val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
                     val buttons = getChoicesButtons(gameState)
                     bot.sendMessage(chatId = ChatId.fromId(chatId), text = "CHOICES", replyMarkup = buttons)
-                }
-                command("permit") {
-                    if (!checkAdmin(message)) return@command
-                    val chatId = message.chat.id
-                    val username = args[0]
-
-                    authorizedUsers.add(username)
-                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "open service for user with username: $username")
-                }
-                command("forbid") {
-                    if (!checkAdmin(message)) return@command
-                    val chatId = message.chat.id
-                    val username = args[0]
-
-                    authorizedUsers.remove(username)
-                    bot.sendMessage(chatId = ChatId.fromId(chatId), text = "close service for user with username: $username")
                 }
                 callbackQuery {
                     if (callbackQuery.data.startsWith(ButtonId.LOCATION.name)) {
@@ -257,10 +246,6 @@ class TextGameBotConfiguration {
 
         val userID = message.chat.id
         return allowedUsers.contains(userID)
-    }
-
-    private fun checkAuthorized(username: String): Boolean {
-        return authorizedUsers.contains(username)
     }
 
     private fun decideLogLevel(logLevel: String): LogLevel {
