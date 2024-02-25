@@ -1,0 +1,30 @@
+CREATE TABLE locations (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    start_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE conversations (
+    id BIGSERIAL PRIMARY KEY,
+    conversation_id BIGINT NOT NULL,
+    person TEXT NOT NULL,
+    conversation_text TEXT NOT NULL,
+    processor_id TEXT NOT NULL DEFAULT '',
+    illustration TEXT NOT NULL DEFAULT '',
+    location_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE options (
+    id UUID PRIMARY KEY,
+    from_id BIGINT NOT NULL,
+    to_id BIGINT NOT NULL,
+    option_text TEXT NOT NULL DEFAULT '',
+    option_condition_id TEXT NOT NULL DEFAULT '',
+    location_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

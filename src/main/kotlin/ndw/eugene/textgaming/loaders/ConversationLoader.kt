@@ -9,12 +9,14 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import ndw.eugene.textgaming.content.ConversationProcessors
 import ndw.eugene.textgaming.content.GameCharacter
 import ndw.eugene.textgaming.content.Location
-import ndw.eugene.textgaming.data.ConversationPart
-import ndw.eugene.textgaming.data.LocationData
-import ndw.eugene.textgaming.data.Option
+import ndw.eugene.textgaming.data.entity.ConversationEntity
+import ndw.eugene.textgaming.data.entity.LocationEntity
+import ndw.eugene.textgaming.data.entity.OptionEntity
+import ndw.eugene.textgaming.data.repository.ConversationRepository
+import ndw.eugene.textgaming.data.repository.LocationRepository
+import ndw.eugene.textgaming.data.repository.OptionRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Component
@@ -22,25 +24,23 @@ import org.springframework.util.FileCopyUtils
 import java.io.InputStreamReader
 import java.util.Arrays
 import java.util.UUID
-import java.util.stream.Collectors.toList
 
 private val logger = KotlinLogging.logger {}
 
 @Component
 class ConversationLoader(
-    private val conversationProcessors: ConversationProcessors,
-    private val illustrationsLoader: IllustrationsLoader
+    private val locationRepository: LocationRepository,
+    private val conversationRepository: ConversationRepository,
+    private val optionRepository: OptionRepository,
 ) {
 
     @Value("classpath:conversations/*.json")
     lateinit var resources: Array<Resource>
 
-    fun loadLocations(): Map<Location, LocationData> {
+    fun loadLocations() {
         logger.info { "start loading conversations" }
-
-        val result = Arrays
-            .stream(resources)
-            .map { r ->
+        Arrays.stream(resources)
+            .forEach { r ->
                 logger.info { "start loading ${r.filename}" }
                 val locationName = r.filename?.split(".")?.get(0) ?: throw IllegalArgumentException()
                 val location = Location.valueOf(locationName.uppercase())
@@ -48,66 +48,50 @@ class ConversationLoader(
                     FileCopyUtils.copyToString(it)
                 }
                 val conversation = Json.decodeFromString<Conversation>(text)
-                val locationData = buildLocationData(conversation, location)
                 logger.info { "${r.filename} was loaded" }
-
-                locationData
+                if (locationRepository.findByName(location.name) == null) {
+                    migrateLocationToDataBase(location, conversation)
+                }
             }
-            .collect(toList())
-            .associateBy({ it.location }, { it })
-
         logger.info { "all conversations were loaded" }
-        return result
     }
 
-    private fun buildLocationData(conversation: Conversation, location: Location): LocationData {
-        logger.info { "building data for $location" }
-        val convById = mutableMapOf<Long, ConversationPart>()
+    private fun migrateLocationToDataBase(location: Location,  conversation: Conversation) {
+        val locationEntity = LocationEntity()
+        logger.info { "migrate location: ${location.name}" }
+        locationEntity.name = location.name
+        locationEntity.startId = 0 //todo change to param
+        val savedLocation = locationRepository.save(locationEntity)
+        val locationId = savedLocation.id ?: throw IllegalArgumentException("location saved incorrectly")
+        logger.info { "location ${location.name} saved" }
+        logger.info { "start saving conversations for location: ${location.name}" }
+
+        var savedConversationCounter = 0
         conversation.conversationParts.forEach {
-            val conversationPart = buildConversationPart(it)
-
-            convById[it.id] = conversationPart
+            val newConversation = ConversationEntity()
+            newConversation.locationId = locationId
+            newConversation.conversationId = it.id
+            newConversation.person = it.character.name
+            newConversation.conversationText = it.text
+            newConversation.illustration = it.illustration ?: ""
+            newConversation.processorId = it.processorId ?: ""
+            conversationRepository.save(newConversation)
+            savedConversationCounter++
         }
+        logger.info { "$savedConversationCounter conversationParts were saved for location ${location.name}" }
 
-        val convToOption = mutableMapOf<Long, MutableList<Option>>()
+        var savedOptionCounter = 0
         conversation.options.forEach {
-            val options = convToOption.getOrPut(it.fromId) { mutableListOf() }
-            val option = buildOption(it)
-            options.add(option)
+            val newOption = OptionEntity()
+            newOption.fromId = it.fromId
+            newOption.toId = it.toId
+            newOption.optionText = it.optionText
+            newOption.optionConditionId = it.optionConditionId ?: ""
+            newOption.locationId = locationId
+            optionRepository.save(newOption)
+            savedOptionCounter++
         }
-
-        logger.info { "data for $location was built" }
-        return LocationData(
-            location,
-            conversation.conversationParts[0].id,
-            convById,
-            convToOption
-        )
-    }
-
-    private fun buildConversationPart(conversationPartDto: ConversationPartDto): ConversationPart {
-        val illustration = illustrationsLoader.getIllustration(conversationPartDto.illustration)
-        val processor = conversationProcessors.getProcessorById(conversationPartDto.processorId)
-
-        return ConversationPart(
-            id = conversationPartDto.id,
-            character = conversationPartDto.character,
-            text = conversationPartDto.text,
-            illustration = illustration,
-            executable = processor
-        )
-    }
-
-    private fun buildOption(optionDto: OptionDto): Option {
-        val optionCondition = conversationProcessors.getOptionConditionById(optionDto.optionConditionId)
-
-        return Option(
-            uuid = optionDto.uuid,
-            fromId = optionDto.fromId,
-            toId = optionDto.toId,
-            optionText = optionDto.optionText,
-            condition = optionCondition
-        )
+        logger.info { "$savedOptionCounter options were saved for location ${location.name}" }
     }
 }
 

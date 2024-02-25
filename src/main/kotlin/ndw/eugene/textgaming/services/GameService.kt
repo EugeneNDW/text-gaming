@@ -2,6 +2,8 @@ package ndw.eugene.textgaming.services
 
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
+import ndw.eugene.textgaming.content.ConversationProcessors
+import ndw.eugene.textgaming.content.GameCharacter
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.ConversationPart
 import ndw.eugene.textgaming.data.GameMessage
@@ -9,8 +11,12 @@ import ndw.eugene.textgaming.data.Option
 import ndw.eugene.textgaming.data.UserOption
 import ndw.eugene.textgaming.data.entity.GameHistory
 import ndw.eugene.textgaming.data.entity.GameState
+import ndw.eugene.textgaming.data.repository.ConversationRepository
 import ndw.eugene.textgaming.data.repository.GameStateRepository
+import ndw.eugene.textgaming.data.repository.LocationRepository
+import ndw.eugene.textgaming.data.repository.OptionRepository
 import ndw.eugene.textgaming.loaders.ConversationLoader
+import ndw.eugene.textgaming.loaders.IllustrationsLoader
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -18,15 +24,17 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class GameService(
-    private val locationService: LocationService,
     private val conversationLoader: ConversationLoader,
     private val gameStateRepository: GameStateRepository,
+    private val conversationRepository: ConversationRepository,
+    private val optionRepository: OptionRepository,
+    private val locationRepository: LocationRepository,
+    private val conversationProcessors: ConversationProcessors,
+    private val illustrationsLoader: IllustrationsLoader,
 ) {
     @PostConstruct
     fun initGameService() {
-        val locations = conversationLoader.loadLocations()
-        locationService.initLocationService(locations)
-
+        conversationLoader.loadLocations()
         logger.info { "game service was initialized" }
     }
 
@@ -67,7 +75,8 @@ class GameService(
     }
 
     private fun createGameForUser(userId: Long, startLocation: Location): GameState {
-        val conversationStartId = locationService.getLocationData(startLocation).startId
+        val locationEntity = locationRepository.findByName(startLocation.name)
+        val conversationStartId = locationEntity?.startId ?: throw IllegalArgumentException()
         val game = GameState()
         game.userId = userId
         game.location = startLocation
@@ -88,7 +97,7 @@ class GameService(
     }
 
     private fun progressConversation(gameState: GameState, optionId: UUID) {
-        val option = getOptions(gameState).find { it.uuid == optionId }
+        val option = getOptions(gameState.currentConversationId, gameState.location.name).find { it.uuid == optionId }
             ?: throw IllegalArgumentException("no option with id: $optionId")
         if (!option.condition.invoke(gameState)) throw IllegalArgumentException("not available option")
 
@@ -97,13 +106,19 @@ class GameService(
     }
 
     private fun getCurrentConversation(gameState: GameState): ConversationPart {
-        val location = locationService.getLocationData(gameState.location)
-
-        return location.convById[gameState.currentConversationId] ?: throw IllegalArgumentException()
+        val locationName = gameState.location.name
+        val conversation = conversationRepository.getByLocationAndConversationId(locationName, gameState.currentConversationId)
+        return ConversationPart(
+            conversation.conversationId,
+            GameCharacter.valueOf(conversation.person),
+            conversation.conversationText,
+            illustrationsLoader.getIllustration(conversation.illustration),
+            conversationProcessors.getProcessorById(conversation.processorId)
+        )
     }
 
     private fun getAvailableOptions(gameState: GameState): List<UserOption> {
-        val options = getOptions(gameState).map {
+        val options = getOptions(gameState.currentConversationId, gameState.location.name).map {
             val selected = isOptionSelected(gameState, it.uuid)
             val available = it.condition.invoke(gameState)
 
@@ -123,9 +138,16 @@ class GameService(
         return gameState.gameHistory.find { it.optionId == optionId } != null
     }
 
-    private fun getOptions(gameState: GameState): List<Option> {
-        val locationData = locationService.getLocationData(gameState.location)
-
-        return locationData.convToOption[gameState.currentConversationId] ?: listOf()
+    private fun getOptions(currentConversationId: Long, location: String): List<Option> {
+        return optionRepository.findAllByFromIdAndLocation(currentConversationId, location).map {
+            val option = Option(
+                it.id!!,
+                it.fromId,
+                it.toId,
+                it.optionText,
+                conversationProcessors.getOptionConditionById(it.optionConditionId)
+            )
+            option
+        }
     }
 }
