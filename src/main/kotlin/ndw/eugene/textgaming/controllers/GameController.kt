@@ -43,7 +43,6 @@ data class CreateConversationRequest(
 
 data class CreateConversationResponse(
     val id: Long,
-    val conversationId: Long,
     val person: String,
     val conversationText: String,
     val processorId: String,

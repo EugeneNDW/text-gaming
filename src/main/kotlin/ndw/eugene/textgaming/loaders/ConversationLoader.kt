@@ -60,22 +60,23 @@ class ConversationLoader(
         val locationEntity = LocationEntity()
         logger.info { "migrate location: ${location.name}" }
         locationEntity.name = location.name
-        locationEntity.startId = 0 //todo change to param
+        locationEntity.startId = 0
         val savedLocation = locationRepository.save(locationEntity)
         val locationId = savedLocation.id ?: throw IllegalArgumentException("location saved incorrectly")
         logger.info { "location ${location.name} saved" }
         logger.info { "start saving conversations for location: ${location.name}" }
 
+        val conversationIdToId = HashMap<Long, Long>()
         var savedConversationCounter = 0
         conversation.conversationParts.forEach {
             val newConversation = ConversationEntity()
             newConversation.locationId = locationId
-            newConversation.conversationId = it.id
             newConversation.person = it.character.name
             newConversation.conversationText = it.text
             newConversation.illustration = it.illustration ?: ""
             newConversation.processorId = it.processorId ?: ""
-            conversationRepository.save(newConversation)
+            val savedConversation = conversationRepository.save(newConversation)
+            conversationIdToId[it.id] = savedConversation.id!!
             savedConversationCounter++
         }
         logger.info { "$savedConversationCounter conversationParts were saved for location ${location.name}" }
@@ -83,14 +84,17 @@ class ConversationLoader(
         var savedOptionCounter = 0
         conversation.options.forEach {
             val newOption = OptionEntity()
-            newOption.fromId = it.fromId
-            newOption.toId = it.toId
+            newOption.fromId = conversationIdToId[it.fromId] ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
+            newOption.toId = conversationIdToId[it.toId] ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
             newOption.optionText = it.optionText
             newOption.optionConditionId = it.optionConditionId ?: ""
             newOption.locationId = locationId
             optionRepository.save(newOption)
             savedOptionCounter++
         }
+
+        savedLocation.startId = conversationIdToId[savedLocation.startId] ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
+        locationRepository.save(savedLocation)
         logger.info { "$savedOptionCounter options were saved for location ${location.name}" }
     }
 }

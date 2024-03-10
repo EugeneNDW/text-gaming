@@ -8,7 +8,6 @@ CREATE TABLE locations (
 
 CREATE TABLE conversations (
     id BIGSERIAL PRIMARY KEY,
-    conversation_id BIGINT NOT NULL,
     person TEXT NOT NULL,
     conversation_text TEXT NOT NULL,
     processor_id TEXT NOT NULL DEFAULT '',

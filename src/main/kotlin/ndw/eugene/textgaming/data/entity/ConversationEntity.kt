@@ -11,9 +11,6 @@ class ConversationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    @Column(name = "conversation_id", nullable = false)
-    var conversationId: Long = 0
-
     @Column(nullable = false)
     var person: String = ""
 

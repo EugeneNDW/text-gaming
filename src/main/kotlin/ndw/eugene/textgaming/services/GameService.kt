@@ -90,7 +90,6 @@ class GameService(
         createConversation: CreateConversationRequest
     ): CreateConversationResponse {
         val newConversation = ConversationEntity()
-        newConversation.conversationId = createConversation.conversationId
         newConversation.locationId = createConversation.locationId
         newConversation.conversationText = createConversation.conversationText
         newConversation.person = createConversation.person
@@ -101,7 +100,6 @@ class GameService(
 
         return CreateConversationResponse(
             savedConversation.id!!,
-            savedConversation.conversationId,
             savedConversation.person,
             savedConversation.conversationText,
             savedConversation.processorId,
@@ -172,7 +170,7 @@ class GameService(
         val conversation =
             conversationRepository.getByLocationAndConversationId(locationName, gameState.currentConversationId)
         return ConversationPart(
-            conversation.conversationId,
+            conversation.id!!,
             GameCharacter.valueOf(conversation.person),
             conversation.conversationText,
             illustrationsLoader.getIllustration(conversation.illustration),
