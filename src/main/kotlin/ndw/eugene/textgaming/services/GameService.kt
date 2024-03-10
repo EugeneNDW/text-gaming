@@ -1,16 +1,17 @@
 package ndw.eugene.textgaming.services
 
 import jakarta.annotation.PostConstruct
+import jakarta.websocket.server.PathParam
 import mu.KotlinLogging
 import ndw.eugene.textgaming.content.ConversationProcessors
 import ndw.eugene.textgaming.content.GameCharacter
 import ndw.eugene.textgaming.content.Location
+import ndw.eugene.textgaming.controllers.*
 import ndw.eugene.textgaming.data.ConversationPart
 import ndw.eugene.textgaming.data.GameMessage
 import ndw.eugene.textgaming.data.Option
 import ndw.eugene.textgaming.data.UserOption
-import ndw.eugene.textgaming.data.entity.GameHistory
-import ndw.eugene.textgaming.data.entity.GameState
+import ndw.eugene.textgaming.data.entity.*
 import ndw.eugene.textgaming.data.repository.ConversationRepository
 import ndw.eugene.textgaming.data.repository.GameStateRepository
 import ndw.eugene.textgaming.data.repository.LocationRepository
@@ -40,7 +41,7 @@ class GameService(
 
     fun userHasGameActive(userId: Long): Boolean {
         val usersCurrentGame = getUsersCurrentGame(userId)
-        return usersCurrentGame != null && !usersCurrentGame.isEnded //todo отдельный запрос к репо, который проверяет есть ли у нас начатая игра
+        return usersCurrentGame != null && !usersCurrentGame.isEnded
     }
 
     fun startNewGameForUser(userId: Long, location: Location = Location.DOCKS): GameMessage {
@@ -72,6 +73,67 @@ class GameService(
     fun getUserCurrentPlace(userId: Long): GameMessage {
         val game = getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
         return getGameMessage(game)
+    }
+
+    fun createLocation(
+        location: CreateLocationRequest
+    ): CreateLocationResponse {
+        val locationEntity = LocationEntity()
+        locationEntity.name = location.name
+        locationEntity.startId = location.startId
+        val savedLocation = locationRepository.save(locationEntity)
+
+        return CreateLocationResponse(savedLocation.id!!, savedLocation.name, savedLocation.startId)
+    }
+
+    fun createConversation(
+        createConversation: CreateConversationRequest
+    ): CreateConversationResponse {
+        val newConversation = ConversationEntity()
+        newConversation.conversationId = createConversation.conversationId
+        newConversation.locationId = createConversation.locationId
+        newConversation.conversationText = createConversation.conversationText
+        newConversation.person = createConversation.person
+        newConversation.illustration = createConversation.illustration
+        newConversation.processorId = createConversation.processorId
+
+        val savedConversation = conversationRepository.save(newConversation)
+
+        return CreateConversationResponse(
+            savedConversation.id!!,
+            savedConversation.conversationId,
+            savedConversation.person,
+            savedConversation.conversationText,
+            savedConversation.processorId,
+            savedConversation.illustration,
+            savedConversation.locationId
+        )
+    }
+
+    fun createOptions(
+        options: List<OptionRequest>
+    ): List<OptionResponse> {
+        val entities = options.map {
+            val option = OptionEntity()
+            option.fromId = it.fromId
+            option.toId = it.toId
+            option.optionText = it.optionText
+            option.optionConditionId = it.optionConditionId
+            option.locationId = it.locationId
+            option
+        }.toList()
+
+        return optionRepository.saveAll(entities).map {
+            val option = OptionResponse(
+                it.id!!,
+                it.fromId,
+                it.toId,
+                it.optionText,
+                it.optionConditionId,
+                it.locationId,
+            )
+            option
+        }
     }
 
     private fun createGameForUser(userId: Long, startLocation: Location): GameState {
@@ -107,7 +169,8 @@ class GameService(
 
     private fun getCurrentConversation(gameState: GameState): ConversationPart {
         val locationName = gameState.location.name
-        val conversation = conversationRepository.getByLocationAndConversationId(locationName, gameState.currentConversationId)
+        val conversation =
+            conversationRepository.getByLocationAndConversationId(locationName, gameState.currentConversationId)
         return ConversationPart(
             conversation.conversationId,
             GameCharacter.valueOf(conversation.person),
