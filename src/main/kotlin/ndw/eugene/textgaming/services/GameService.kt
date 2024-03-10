@@ -1,10 +1,8 @@
 package ndw.eugene.textgaming.services
 
 import jakarta.annotation.PostConstruct
-import jakarta.websocket.server.PathParam
 import mu.KotlinLogging
 import ndw.eugene.textgaming.content.ConversationProcessors
-import ndw.eugene.textgaming.content.GameCharacter
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.controllers.*
 import ndw.eugene.textgaming.data.ConversationPart
@@ -171,7 +169,7 @@ class GameService(
             conversationRepository.getByLocationAndConversationId(locationName, gameState.currentConversationId)
         return ConversationPart(
             conversation.id!!,
-            GameCharacter.valueOf(conversation.person),
+            conversation.person,
             conversation.conversationText,
             illustrationsLoader.getIllustration(conversation.illustration),
             conversationProcessors.getProcessorById(conversation.processorId)

@@ -1,11 +1,10 @@
 package ndw.eugene.textgaming.data
 
 import ndw.eugene.textgaming.content.ConversationProcessor
-import ndw.eugene.textgaming.content.GameCharacter
 
 data class ConversationPart(
     val id: Long,
-    val character: GameCharacter,
+    val character: String,
     val text: String,
     val illustration: ByteArray? = null,
     val executable: ConversationProcessor = { } // получает стейт чтобы изменить его

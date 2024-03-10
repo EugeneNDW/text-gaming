@@ -1,26 +1,5 @@
 package ndw.eugene.textgaming.content
 
-enum class GameCharacter {
-    //main
-    YOU,
-    RENART,
-    SHEPHERD,
-    ASTRONOMER,
-    HIGH_STARGAZER,
-
-    //secondary
-    MUSICIANS,
-    COFFEE_SELLER,
-    MERCHANT,
-    SAILOR,
-    CAPTAIN,
-    HARPY,
-    HARPIES,
-
-    //technical
-    ADMIN
-}
-
 enum class Location {
     DOCKS,
     ALLEYWAYS,

@@ -9,7 +9,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import ndw.eugene.textgaming.content.GameCharacter
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.entity.ConversationEntity
 import ndw.eugene.textgaming.data.entity.LocationEntity
@@ -71,7 +70,7 @@ class ConversationLoader(
         conversation.conversationParts.forEach {
             val newConversation = ConversationEntity()
             newConversation.locationId = locationId
-            newConversation.person = it.character.name
+            newConversation.person = it.character
             newConversation.conversationText = it.text
             newConversation.illustration = it.illustration ?: ""
             newConversation.processorId = it.processorId ?: ""
@@ -108,7 +107,7 @@ private data class Conversation(
 @Serializable
 private data class ConversationPartDto(
     val id: Long,
-    val character: GameCharacter,
+    val character: String,
     val text: String,
     val processorId: String? = null,
     val illustration: String? = null,

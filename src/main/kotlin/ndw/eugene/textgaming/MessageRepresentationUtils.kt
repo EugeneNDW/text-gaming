@@ -7,7 +7,6 @@ import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import ndw.eugene.textgaming.content.Choice
-import ndw.eugene.textgaming.content.GameCharacter
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.ConversationPart
 import ndw.eugene.textgaming.data.UserOption
@@ -43,7 +42,7 @@ enum class ButtonId {
 fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
     var result = ""
 
-    if (conversationPart.character != GameCharacter.ADMIN) {
+    if (conversationPart.character != "ADMIN") {
         result += makeTextBold("${conversationPart.character}:")
         result += CHARACTER_TEXT_DELIMITER
     }
