@@ -1,13 +1,11 @@
 package ndw.eugene.textgaming.data
 
-import ndw.eugene.textgaming.content.ConversationProcessor
-
 data class ConversationPart(
     val id: Long,
     val character: String,
     val text: String,
     val illustration: ByteArray? = null,
-    val executable: ConversationProcessor = { } // получает стейт чтобы изменить его
+    val processor: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -22,8 +20,9 @@ data class ConversationPart(
             if (other.illustration == null) return false
             if (!illustration.contentEquals(other.illustration)) return false
         } else if (other.illustration != null) return false
-        if (executable != other.executable) return false
-
+        if (processor != other.processor) {
+            return false
+        }
         return true
     }
 
@@ -32,7 +31,6 @@ data class ConversationPart(
         result = 31 * result + character.hashCode()
         result = 31 * result + text.hashCode()
         result = 31 * result + (illustration?.contentHashCode() ?: 0)
-        result = 31 * result + executable.hashCode()
         return result
     }
 }

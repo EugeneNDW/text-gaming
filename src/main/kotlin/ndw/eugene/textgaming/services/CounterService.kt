@@ -8,14 +8,16 @@ import org.springframework.stereotype.Service
 @Service
 class CounterService {
 
-    fun increaseCounter(gameState: GameState, type: CounterType) {
-        val counter = getOrCreateCounter(gameState, type)
+    fun increaseCounter(gameState: GameState, type: String) {
+        val counterType = CounterType.valueOf(type)
+        val counter = getOrCreateCounter(gameState, counterType)
 
         counter.counterValue++
     }
 
-    fun decreaseCounter(gameState: GameState, type: CounterType) {
-        val counter = getOrCreateCounter(gameState, type)
+    fun decreaseCounter(gameState: GameState, type: String) {
+        val counterType = CounterType.valueOf(type)
+        val counter = getOrCreateCounter(gameState, counterType)
 
         counter.counterValue--
     }

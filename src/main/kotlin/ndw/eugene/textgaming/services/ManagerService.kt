@@ -21,7 +21,7 @@ class ManagerService(
         gameStateRepository.save(game)
     }
 
-    fun addChoice(userId: Long, choice: Choice) {
+    fun addChoice(userId: Long, choice: String) {
         val game = gameService.getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
         choiceService.addChoice(game, choice)
         gameStateRepository.save(game)

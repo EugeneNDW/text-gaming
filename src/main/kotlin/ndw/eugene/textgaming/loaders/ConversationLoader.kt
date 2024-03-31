@@ -9,6 +9,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+import ndw.eugene.textgaming.content.ConversationProcessors
 import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.entity.ConversationEntity
 import ndw.eugene.textgaming.data.entity.LocationEntity
@@ -31,6 +32,7 @@ class ConversationLoader(
     private val locationRepository: LocationRepository,
     private val conversationRepository: ConversationRepository,
     private val optionRepository: OptionRepository,
+    private val processors: ConversationProcessors,
 ) {
 
     @Value("classpath:conversations/*.json")
@@ -73,7 +75,7 @@ class ConversationLoader(
             newConversation.person = it.character
             newConversation.conversationText = it.text
             newConversation.illustration = it.illustration ?: ""
-            newConversation.processorId = it.processorId ?: ""
+            newConversation.processorId = processors.getProcessorById(it.processorId ?: "")
             val savedConversation = conversationRepository.save(newConversation)
             conversationIdToId[it.id] = savedConversation.id!!
             savedConversationCounter++

@@ -14,8 +14,8 @@ class LocationService(
     private val gameStateRepository: GameStateRepository,
     private val locationRepository: LocationRepository
 ) {
-    fun changeLocationTo(gameState: GameState, location: Location) {
-        val locationEntity = locationRepository.findByName(location.name) ?: throw IllegalArgumentException()
+    fun changeLocationTo(gameState: GameState, location: String) {
+        val locationEntity = locationRepository.findByName(location) ?: throw IllegalArgumentException()
         gameState.location = Location.valueOf(locationEntity.name)
         gameState.currentConversationId = locationEntity.startId
         gameStateRepository.save(gameState)

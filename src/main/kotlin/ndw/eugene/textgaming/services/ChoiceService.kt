@@ -10,12 +10,10 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class ChoiceService {
-    fun addChoice(gameState: GameState, choice: Choice) {
+    fun addChoice(gameState: GameState, choice: String) {
         val gameChoice = GameChoice()
-        gameChoice.choice = choice
-
+        gameChoice.choice = Choice.valueOf(choice) //todo remake to just string
         gameState.addChoice(gameChoice)
-
         logger.info { "user: ${gameState.userId} made choice: $choice in game: ${gameState.id}" }
     }
 

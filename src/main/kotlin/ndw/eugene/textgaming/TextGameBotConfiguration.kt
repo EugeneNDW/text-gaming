@@ -182,7 +182,7 @@ class TextGameBotConfiguration {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
                         val choiceName = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
-                        managerService.addChoice(chatId, Choice.valueOf(choiceName))
+                        managerService.addChoice(chatId, choiceName)
                         val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
                         val buttons = getChoicesButtons(gameState)
 

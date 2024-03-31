@@ -151,7 +151,7 @@ class GameService(
     }
 
     private fun processConversation(gameState: GameState) {
-        getCurrentConversation(gameState).executable.invoke(gameState)
+        conversationProcessors.executeProcessor(gameState, getCurrentConversation(gameState).processor)
     }
 
     private fun progressConversation(gameState: GameState, optionId: UUID) {
@@ -172,7 +172,7 @@ class GameService(
             conversation.person,
             conversation.conversationText,
             illustrationsLoader.getIllustration(conversation.illustration),
-            conversationProcessors.getProcessorById(conversation.processorId)
+            conversation.processorId
         )
     }
 

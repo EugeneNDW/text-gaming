@@ -1,7 +1,7 @@
 application:
   bot:
     token: "${TOKEN}"
-    logLevel: "none"
+    logLevel: "all"
 spring:
   datasource:
     url: "${DATABASE_URL}"
