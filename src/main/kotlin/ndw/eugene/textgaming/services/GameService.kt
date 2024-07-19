@@ -30,6 +30,7 @@ class GameService(
     private val locationRepository: LocationRepository,
     private val conversationProcessors: ConversationProcessors,
     private val illustrationsLoader: IllustrationsLoader,
+    private val conditionService: ConditionService
 ) {
     @PostConstruct
     fun initGameService() {
@@ -114,7 +115,7 @@ class GameService(
             option.fromId = it.fromId
             option.toId = it.toId
             option.optionText = it.optionText
-            option.optionConditionId = it.optionConditionId
+            option.optionCondition = it.optionConditionId
             option.locationId = it.locationId
             option
         }.toList()
@@ -125,7 +126,7 @@ class GameService(
                 it.fromId,
                 it.toId,
                 it.optionText,
-                it.optionConditionId,
+                it.optionCondition,
                 it.locationId,
             )
             option
@@ -155,9 +156,13 @@ class GameService(
     }
 
     private fun progressConversation(gameState: GameState, optionId: UUID) {
-        val option = getOptions(gameState.currentConversationId, gameState.location.name).find { it.uuid == optionId }
-            ?: throw IllegalArgumentException("no option with id: $optionId")
-        if (!option.condition.invoke(gameState)) throw IllegalArgumentException("not available option")
+        val option = getOptions(gameState.currentConversationId, gameState.location.name)
+            .find { it.uuid == optionId } ?: throw IllegalArgumentException("no option with id: $optionId")
+        if (!conditionService.evaluateCondition(
+                option.condition,
+                gameState
+            )
+        ) throw IllegalArgumentException("not available option")
 
         addSelectedOption(gameState, optionId)
         gameState.currentConversationId = option.toId
@@ -179,7 +184,7 @@ class GameService(
     private fun getAvailableOptions(gameState: GameState): List<UserOption> {
         val options = getOptions(gameState.currentConversationId, gameState.location.name).map {
             val selected = isOptionSelected(gameState, it.uuid)
-            val available = it.condition.invoke(gameState)
+            val available = conditionService.evaluateCondition(it.condition, gameState)
 
             UserOption(it, available, selected)
         }
@@ -204,7 +209,7 @@ class GameService(
                 it.fromId,
                 it.toId,
                 it.optionText,
-                conversationProcessors.getOptionConditionById(it.optionConditionId)
+                it.optionCondition
             )
             option
         }

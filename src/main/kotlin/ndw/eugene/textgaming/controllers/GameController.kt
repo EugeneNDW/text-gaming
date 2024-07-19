@@ -8,12 +8,18 @@ import java.util.*
 
 @RestController
 class GameController(private val gameService: GameService) {
+    //todo add choices in game
+    //todo get choices in game
+    //todo add counters in game
+    //todo get counters  in game
+
     @PostMapping("/locations")
     fun createLocation(
         @RequestBody createLocationRequest: CreateLocationRequest
     ): CreateLocationResponse {
         return gameService.createLocation(createLocationRequest)
     }
+    //todo get locations  in game
 
     @PostMapping("/conversations")
     fun createConversation(
@@ -21,6 +27,7 @@ class GameController(private val gameService: GameService) {
     ): CreateConversationResponse {
         return gameService.createConversation(createConversationRequest)
     }
+    //todo get conversations in game
 
     @PostMapping("/options")
     fun addOptions(
@@ -28,6 +35,7 @@ class GameController(private val gameService: GameService) {
     ): List<OptionResponse> {
         return gameService.createOptions(options)
     }
+    //todo get options in game
 }
 
 data class CreateLocationRequest(val name: String, val startId: Long)

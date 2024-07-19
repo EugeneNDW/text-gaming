@@ -21,8 +21,8 @@ class OptionEntity {
     @Column(name = "option_text", nullable = false)
     var optionText: String = ""
 
-    @Column(name = "option_condition_id", nullable = false)
-    var optionConditionId: String = ""
+    @Column(name = "option_condition", nullable = false)
+    var optionCondition: String = ""
 
     @Column(name = "location_id", nullable = false)
     var locationId: Long = 0

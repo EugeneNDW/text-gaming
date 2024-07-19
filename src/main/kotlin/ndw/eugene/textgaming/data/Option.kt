@@ -1,6 +1,5 @@
 package ndw.eugene.textgaming.data
 
-import ndw.eugene.textgaming.content.OptionCondition
 import java.util.UUID
 
 data class Option(
@@ -8,7 +7,7 @@ data class Option(
     val fromId: Long,
     val toId: Long,
     val optionText: String,
-    val condition: OptionCondition = { true }
+    val condition: String
 )
 
 data class UserOption(

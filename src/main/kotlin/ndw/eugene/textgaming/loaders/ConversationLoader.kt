@@ -88,7 +88,7 @@ class ConversationLoader(
             newOption.fromId = conversationIdToId[it.fromId] ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
             newOption.toId = conversationIdToId[it.toId] ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
             newOption.optionText = it.optionText
-            newOption.optionConditionId = it.optionConditionId ?: ""
+            newOption.optionCondition = processors.getOptionString(it.optionConditionId)
             newOption.locationId = locationId
             optionRepository.save(newOption)
             savedOptionCounter++

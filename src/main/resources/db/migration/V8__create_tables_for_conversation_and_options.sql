@@ -22,7 +22,7 @@ CREATE TABLE options (
     from_id BIGINT NOT NULL,
     to_id BIGINT NOT NULL,
     option_text TEXT NOT NULL DEFAULT '',
-    option_condition_id TEXT NOT NULL DEFAULT '',
+    option_condition TEXT NOT NULL DEFAULT '',
     location_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

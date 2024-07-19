@@ -1,15 +1,9 @@
 package ndw.eugene.textgaming.content
 
-import mu.KotlinLogging
 import ndw.eugene.textgaming.data.entity.CounterType
 import ndw.eugene.textgaming.data.entity.GameState
-import ndw.eugene.textgaming.services.ChoiceService
-import ndw.eugene.textgaming.services.CounterService
-import ndw.eugene.textgaming.services.LocationService
+import ndw.eugene.textgaming.services.*
 import org.springframework.stereotype.Component
-import java.lang.Exception
-
-typealias OptionCondition = (GameState) -> Boolean
 
 private const val BAD_GUY_POINTS_REQUIRED = 5
 private const val SHEPHERD_IS_FRIEND_MIN_POINTS = 3
@@ -20,8 +14,6 @@ class ConversationProcessors(
     private val locationService: LocationService,
     private val counterService: CounterService,
 ) {
-    private val optionsById = mutableMapOf<String, OptionCondition>()
-
     private val processorMap: Map<String, String> = mapOf(
         "changeLocationToAlleyways" to "CHANGE:ALLEYWAYS",
         "changeLocationToMarket" to "CHANGE:MARKET",
@@ -86,278 +78,89 @@ class ConversationProcessors(
         "memorizeBoyForced" to "MEMORIZE:BOY_FORCED"
     )
 
-    init {
-        initOptionConditions()
-    }
+    private val conditionMap: Map<String, String> = mapOf(
+        "secondOptionChosen" to "${CHECK_CONDITION_PREFIX}:${Choice.TEST}",
+        "retellCompanionStoryCheck" to "${CHECK_CONDITION_PREFIX}:${Choice.COMPANION_STORY}",
+        "checkStarsTalking" to "${CHECK_CONDITION_PREFIX}:${Choice.STARS_TALKING}",
+        "checkStarsSilent" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.STARS_TALKING}",
+        "checkOutOfOffers" to "${CHECK_CONDITION_PREFIX}:${Choice.OFFER_SOLACE} && ${CHECK_CONDITION_PREFIX}:${Choice.OFFER_TRIBUTE} && ${CHECK_CONDITION_PREFIX}:${Choice.OFFER_HOPE}",
+        "checkStillHaveOffers" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.OFFER_SOLACE} || ${CHECK_NOT_CONDITION_PREFIX}:${Choice.OFFER_TRIBUTE} || ${CHECK_NOT_CONDITION_PREFIX}:${Choice.OFFER_HOPE}",
+        "checkTonicWasBought" to "${CHECK_CONDITION_PREFIX}:${Choice.TONIC_BOUGHT}",
+        "checkDidntHearAboutFather" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.HEARD_ABOUT_FATHER}",
+        "checkHeardAboutFather" to "${CHECK_CONDITION_PREFIX}:${Choice.HEARD_ABOUT_FATHER}",
+        "checkTidyYourself" to "${CHECK_CONDITION_PREFIX}:${Choice.TIDY_YOURSELF}",
+        "checkNotTidyYourself" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.TIDY_YOURSELF}",
+        "checkLostName" to "${CHECK_CONDITION_PREFIX}:${Choice.LOST_NAME}",
+        "checkHaveName" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.LOST_NAME}",
+        "checkHeardSadSong" to "${CHECK_CONDITION_PREFIX}:${Choice.SAD_SONG}",
+        "checkHeardEpicSong" to "${CHECK_CONDITION_PREFIX}:${Choice.EPIC_SONG}",
+        "checkDidntHearEpicSong" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.EPIC_SONG}",
+        "checkHeardFunnySong" to "${CHECK_CONDITION_PREFIX}:${Choice.FUNNY_SONG}",
+        "checkHeardMerchantStory" to "${CHECK_CONDITION_PREFIX}:${Choice.HEARD_MERCHANT_STORY}",
+        "checkHaveNoStoryToTell" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.HEARD_MERCHANT_STORY} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.SAD_SONG} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.EPIC_SONG} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.FUNNY_SONG} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.COMPANION_STORY}",
+        "checkAskedAboutResearch" to "${CHECK_CONDITION_PREFIX}:${Choice.RESEARCH}",
+        "checkKnowsAboutLibrary" to "${CHECK_CONDITION_PREFIX}:${Choice.WHAT_HAPPENED_TO_THE_LIBRARY}",
+        "checkDontKnowAboutLibrary" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.WHAT_HAPPENED_TO_THE_LIBRARY}",
+        "checkDestroyed" to "${CHECK_CONDITION_PREFIX}:${Choice.DESTROYED_HOW}",
+        "checkNotDestroyed" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.DESTROYED_HOW}",
+        "checkLibrarians" to "${CHECK_CONDITION_PREFIX}:${Choice.LIBRARIANS}",
+        "checkNotLibrarians" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.LIBRARIANS}",
+        "checkMetTheHarpy" to "${CHECK_CONDITION_PREFIX}:${Choice.MET_THE_HARPY}",
+        "checkDidntMeetTheHarpy" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.MET_THE_HARPY}",
+        "checkWentThroughStorm" to "${CHECK_CONDITION_PREFIX}:${Choice.WENT_THROUGH_THE_STORM}",
+        "checkDidntGoThroughStorm" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.WENT_THROUGH_THE_STORM}",
+        "checkStatuesNotExamined" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.EXAMINED_STATUE}",
+        "checkStatueExamined" to "${CHECK_CONDITION_PREFIX}:${Choice.EXAMINED_STATUE}",
+        "checkShelvesNotExamined" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.EXAMINED_SHELVES}",
+        "checkShelvesExamined" to "${CHECK_CONDITION_PREFIX}:${Choice.EXAMINED_SHELVES}",
+        "checkLeftShepherdToLibrary" to "${CHECK_CONDITION_PREFIX}:${Choice.LEFT_SHEPHERD_TO_LIBRARY}",
+        "checkLeftShepherdToHarpies" to "${CHECK_CONDITION_PREFIX}:${Choice.LEFT_SHEPHERD_TO_HARPIES}",
+        "checkLeftShepherdToJungle" to "${CHECK_CONDITION_PREFIX}:${Choice.LEFT_SHEPHERD_TO_JUNGLE}",
+        "checkGaveShepherdTonic" to "${CHECK_CONDITION_PREFIX}:${Choice.GIVE_TONIC_TO_SHEPHERD}",
+        "checkSpyglass" to "${CHECK_CONDITION_PREFIX}:${Choice.SPYGLASS}",
+        "checkNotSpyglass" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.SPYGLASS}",
+        "checkFioreAppeared" to "${CHECK_CONDITION_PREFIX}:${Choice.FIORE_APPEARED}",
+        "checkFioreDidntAppear" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.FIORE_APPEARED}",
+        "checkPickedStar" to "${CHECK_CONDITION_PREFIX}:${Choice.PICK_STAR}",
+        "checkDidntPickStar" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.PICK_STAR}",
+        "checkForcedBoy" to "${CHECK_CONDITION_PREFIX}:${Choice.BOY_FORCED}",
+        "checkDidntForceBoy" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.BOY_FORCED}",
+        "checkLiedAboutBeetles" to "${CHECK_CONDITION_PREFIX}:${Choice.LIE_ABOUT_BEETLES}",
+        "checkLiedAboutRocks" to "${CHECK_CONDITION_PREFIX}:${Choice.LIE_ABOUT_ROCKS}",
+        "checkLiedAboutPlants" to "${CHECK_CONDITION_PREFIX}:${Choice.LIE_ABOUT_PLANTS}",
+        "checkLibraryRouteAndNoEncounter" to "${CHECK_CONDITION_PREFIX}:${Choice.WHAT_HAPPENED_TO_THE_LIBRARY} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.WAS_IN_SHEPHERD_ENCOUNTER} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.WAS_IN_HARPY_ENCOUNTER}",
+        "checkStormRouteAndNoEncounter" to "${CHECK_CONDITION_PREFIX}:${Choice.WENT_THROUGH_THE_STORM} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.WAS_IN_SHEPHERD_ENCOUNTER} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.WAS_IN_HARPY_ENCOUNTER}",
+        "checkWasInEncounter" to "${CHECK_CONDITION_PREFIX}:${Choice.WAS_IN_SHEPHERD_ENCOUNTER} || ${CHECK_CONDITION_PREFIX}:${Choice.WAS_IN_HARPY_ENCOUNTER}",
+        "checkWasInShepherdEncounter" to "${CHECK_CONDITION_PREFIX}:${Choice.WAS_IN_SHEPHERD_ENCOUNTER}",
+        "checkWasntInShepherdEncounter" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.WAS_IN_SHEPHERD_ENCOUNTER}",
+        "checkWasInHarpyEncounter" to "${CHECK_CONDITION_PREFIX}:${Choice.WAS_IN_HARPY_ENCOUNTER}",
+        "checkWasntInHarpyEncounter" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.WAS_IN_HARPY_ENCOUNTER}",
+        "checkTipMusicians" to "${CHECK_CONDITION_PREFIX}:${Choice.TIP_MUSICIANS}",
+        "checkDidntTipMusicians" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.TIP_MUSICIANS}",
+        "checkCanEarnMoney" to "${CHECK_CONDITION_PREFIX}:${Choice.CAN_EARN_MONEY}",
+        "checkCantEarnMoney" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.CAN_EARN_MONEY}",
+        "checkHeardAboutProphet" to "${CHECK_CONDITION_PREFIX}:${Choice.HEARD_ABOUT_PROPHET}",
+        "checkDidntHearAboutProphet" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.HEARD_ABOUT_PROPHET}",
+        "checkGotNoOne" to "${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_BOY} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_GIRL} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_WIZARD}",
+        "checkGotOnlyBoy" to "${CHECK_CONDITION_PREFIX}:${Choice.GOT_THE_BOY} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_GIRL} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_WIZARD}",
+        "checkGotOnlyGirl" to "${CHECK_CONDITION_PREFIX}:${Choice.GOT_THE_GIRL} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_BOY} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_WIZARD}",
+        "checkGotOnlyWizard" to "${CHECK_CONDITION_PREFIX}:${Choice.GOT_THE_WIZARD} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_GIRL} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_BOY}",
+        "checkGotBoyAndGirl" to "${CHECK_CONDITION_PREFIX}:${Choice.GOT_THE_GIRL} && ${CHECK_CONDITION_PREFIX}:${Choice.GOT_THE_BOY} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_WIZARD}",
+        "checkGotWizardAndGirl" to "${CHECK_CONDITION_PREFIX}:${Choice.GOT_THE_GIRL} && ${CHECK_CONDITION_PREFIX}:${Choice.GOT_THE_WIZARD} && ${CHECK_NOT_CONDITION_PREFIX}:${Choice.GOT_THE_BOY}",
+        "checkShepherdIsFriend" to "${MORETHAN_CONDITION_PREFIX}:$SHEPHERD_IS_FRIEND_MIN_POINTS:${CounterType.BOY_RELATIONSHIP}",
+        "checkBadChoices" to "${EQUALS_CONDITION_PREFIX}:$BAD_GUY_POINTS_REQUIRED:${CounterType.BAD_GUY}"
+    )
 
-    fun getOptionConditionById(id: String?): OptionCondition {
-        if (id.isNullOrBlank()) return { true }
+    fun getOptionString(id: String?): String {
+        if (id.isNullOrBlank()) return ""
 
-        return optionsById[id] ?: throw IllegalArgumentException("there is no option with id: $id")
+        return conditionMap[id] ?: throw IllegalArgumentException("there is no option with id: $id")
     }
 
     fun getProcessorById(id: String): String {
         if (id.isBlank()) return ""
 
         return processorMap[id] ?: throw IllegalArgumentException("there is no processor with id: $id")
-    }
-
-    private fun initOptionConditions() {
-        optionsById["secondOptionChosen"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.TEST)
-        }
-        optionsById["retellCompanionStoryCheck"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.COMPANION_STORY)
-        }
-        optionsById["checkStarsTalking"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.STARS_TALKING)
-        }
-        optionsById["checkStarsSilent"] = {
-            val starsTalking = choiceService.checkChoiceHasBeenMade(it, Choice.STARS_TALKING)
-            !starsTalking
-        }
-        optionsById["checkOutOfOffers"] = {
-            val isOutOfOffers = choiceService.checkChoiceHasBeenMade(
-                it,
-                Choice.OFFER_SOLACE
-            ) && choiceService.checkChoiceHasBeenMade(
-                it,
-                Choice.OFFER_TRIBUTE
-            ) && choiceService.checkChoiceHasBeenMade(
-                it,
-                Choice.OFFER_HOPE
-            )
-
-            isOutOfOffers
-        }
-        optionsById["checkStillHaveOffers"] = {
-            val isOutOfOffers = choiceService.checkChoiceHasBeenMade(
-                it,
-                Choice.OFFER_SOLACE
-            ) && choiceService.checkChoiceHasBeenMade(
-                it,
-                Choice.OFFER_TRIBUTE
-            ) && choiceService.checkChoiceHasBeenMade(
-                it,
-                Choice.OFFER_HOPE
-            )
-
-            !isOutOfOffers
-        }
-        optionsById["checkTonicWasBought"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.TONIC_BOUGHT)
-        }
-        optionsById["checkDidntHearAboutFather"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_ABOUT_FATHER)
-        }
-        optionsById["checkHeardAboutFather"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_ABOUT_FATHER)
-        }
-        optionsById["checkTidyYourself"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.TIDY_YOURSELF)
-        }
-        optionsById["checkNotTidyYourself"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.TIDY_YOURSELF)
-        }
-        optionsById["checkLostName"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LOST_NAME)
-        }
-        optionsById["checkHaveName"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.LOST_NAME)
-        }
-        optionsById["checkHeardSadSong"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.SAD_SONG)
-        }
-        optionsById["checkHeardEpicSong"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.EPIC_SONG)
-        }
-        optionsById["checkDidntHearEpicSong"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.EPIC_SONG)
-        }
-        optionsById["checkHeardFunnySong"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.FUNNY_SONG)
-        }
-        optionsById["checkHeardMerchantStory"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_MERCHANT_STORY)
-        }
-        optionsById["checkHaveNoStoryToTell"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_MERCHANT_STORY)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.SAD_SONG)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.EPIC_SONG)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.FUNNY_SONG)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.COMPANION_STORY)
-        }
-        optionsById["checkAskedAboutResearch"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.RESEARCH)
-        }
-        optionsById["checkKnowsAboutLibrary"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
-        }
-        optionsById["checkDontKnowAboutLibrary"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
-        }
-        optionsById["checkDestroyed"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.DESTROYED_HOW)
-        }
-        optionsById["checkNotDestroyed"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.DESTROYED_HOW)
-        }
-        optionsById["checkLibrarians"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LIBRARIANS)
-        }
-        optionsById["checkNotLibrarians"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.LIBRARIANS)
-        }
-        optionsById["checkMetTheHarpy"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.MET_THE_HARPY)
-        }
-        optionsById["checkDidntMeetTheHarpy"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.MET_THE_HARPY)
-        }
-        optionsById["checkWentThroughStorm"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.WENT_THROUGH_THE_STORM)
-        }
-        optionsById["checkDidntGoThroughStorm"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.WENT_THROUGH_THE_STORM)
-        }
-        optionsById["checkStatuesNotExamined"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_STATUE)
-        }
-        optionsById["checkStatueExamined"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_STATUE)
-        }
-        optionsById["checkShelvesNotExamined"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_SHELVES)
-        }
-        optionsById["checkShelvesExamined"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.EXAMINED_SHELVES)
-        }
-        optionsById["checkLeftShepherdToLibrary"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_LIBRARY)
-        }
-        optionsById["checkLeftShepherdToHarpies"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_HARPIES)
-        }
-        optionsById["checkLeftShepherdToJungle"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LEFT_SHEPHERD_TO_JUNGLE)
-        }
-        optionsById["checkGaveShepherdTonic"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.GIVE_TONIC_TO_SHEPHERD)
-        }
-        optionsById["checkSpyglass"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.SPYGLASS)
-        }
-        optionsById["checkNotSpyglass"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.SPYGLASS)
-        }
-        optionsById["checkFioreAppeared"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.FIORE_APPEARED)
-        }
-        optionsById["checkFioreDidntAppear"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.FIORE_APPEARED)
-        }
-        optionsById["checkPickedStar"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.PICK_STAR)
-        }
-        optionsById["checkDidntPickStar"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.PICK_STAR)
-        }
-        optionsById["checkForcedBoy"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.BOY_FORCED)
-        }
-        optionsById["checkDidntForceBoy"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.BOY_FORCED)
-        }
-        optionsById["checkLiedAboutBeetles"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LIE_ABOUT_BEETLES)
-        }
-        optionsById["checkLiedAboutRocks"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LIE_ABOUT_ROCKS)
-        }
-        optionsById["checkLiedAboutPlants"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.LIE_ABOUT_PLANTS)
-        }
-        optionsById["checkLibraryRouteAndNoEncounter"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.WHAT_HAPPENED_TO_THE_LIBRARY)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
-        }
-        optionsById["checkStormRouteAndNoEncounter"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.WENT_THROUGH_THE_STORM)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
-        }
-        optionsById["checkWasInEncounter"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
-                    || choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
-        }
-        optionsById["checkWasInShepherdEncounter"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
-        }
-        optionsById["checkWasntInShepherdEncounter"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_SHEPHERD_ENCOUNTER)
-        }
-        optionsById["checkWasInHarpyEncounter"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
-        }
-        optionsById["checkWasntInHarpyEncounter"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.WAS_IN_HARPY_ENCOUNTER)
-        }
-        optionsById["checkTipMusicians"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.TIP_MUSICIANS)
-        }
-        optionsById["checkDidntTipMusicians"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.TIP_MUSICIANS)
-        }
-        optionsById["checkCanEarnMoney"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.CAN_EARN_MONEY)
-        }
-        optionsById["checkCantEarnMoney"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.CAN_EARN_MONEY)
-        }
-        optionsById["checkHeardAboutProphet"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_ABOUT_PROPHET)
-        }
-        optionsById["checkDidntHearAboutProphet"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.HEARD_ABOUT_PROPHET)
-        }
-
-        optionsById["checkGotNoOne"] = {
-            !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
-        }
-        optionsById["checkGotOnlyBoy"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
-        }
-        optionsById["checkGotOnlyGirl"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
-        }
-        optionsById["checkGotOnlyWizard"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
-        }
-        optionsById["checkGotBoyAndGirl"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
-                    && choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
-        }
-        optionsById["checkGotWizardAndGirl"] = {
-            choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_GIRL)
-                    && choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_WIZARD)
-                    && !choiceService.checkChoiceHasBeenMade(it, Choice.GOT_THE_BOY)
-        }
-        optionsById["checkShepherdIsFriend"] = {
-            counterService.getCounterValue(it, CounterType.BOY_RELATIONSHIP) >= SHEPHERD_IS_FRIEND_MIN_POINTS
-        }
-        optionsById["checkBadChoices"] = {
-            counterService.getCounterValue(it, CounterType.BAD_GUY) == BAD_GUY_POINTS_REQUIRED
-        }
     }
 
     fun executeProcessor(gameState: GameState, processorString: String) {
