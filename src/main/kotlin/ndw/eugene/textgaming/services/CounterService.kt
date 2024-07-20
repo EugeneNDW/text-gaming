@@ -22,12 +22,6 @@ class CounterService {
         counter.counterValue--
     }
 
-    fun getCounterValue(gameState: GameState, type: CounterType): Int {
-        val counter = gameState.gameCounters.find { it.counterType == type }
-
-        return counter?.counterValue ?: 0
-    }
-
     private fun getOrCreateCounter(gameState: GameState, type: CounterType): GameCounter {
         var counter = gameState.gameCounters.find { it.counterType == type }
 

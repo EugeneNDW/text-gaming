@@ -32,7 +32,6 @@ class ConversationLoader(
     private val locationRepository: LocationRepository,
     private val conversationRepository: ConversationRepository,
     private val optionRepository: OptionRepository,
-    private val processors: ConversationProcessors,
 ) {
 
     @Value("classpath:conversations/*.json")
@@ -75,7 +74,7 @@ class ConversationLoader(
             newConversation.person = it.character
             newConversation.conversationText = it.text
             newConversation.illustration = it.illustration ?: ""
-            newConversation.processorId = processors.getProcessorById(it.processorId ?: "")
+            newConversation.processorId = it.processorId ?: ""
             val savedConversation = conversationRepository.save(newConversation)
             conversationIdToId[it.id] = savedConversation.id!!
             savedConversationCounter++
@@ -88,7 +87,7 @@ class ConversationLoader(
             newOption.fromId = conversationIdToId[it.fromId] ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
             newOption.toId = conversationIdToId[it.toId] ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
             newOption.optionText = it.optionText
-            newOption.optionCondition = processors.getOptionString(it.optionConditionId)
+            newOption.optionCondition = it.optionConditionId ?: ""
             newOption.locationId = locationId
             optionRepository.save(newOption)
             savedOptionCounter++
