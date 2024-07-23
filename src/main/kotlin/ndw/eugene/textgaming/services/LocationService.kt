@@ -14,7 +14,11 @@ class LocationService(
     private val gameStateRepository: GameStateRepository,
     private val locationRepository: LocationRepository
 ) {
-    fun findByName(locationName: String): LocationEntity {
+    fun findByName(locationName: String): LocationEntity? {
+        return locationRepository.findByName(locationName)
+    }
+
+    fun getByName(locationName: String): LocationEntity {
         return locationRepository.findByName(locationName) ?: throw IllegalArgumentException("cant find location with name $locationName")
     }
 

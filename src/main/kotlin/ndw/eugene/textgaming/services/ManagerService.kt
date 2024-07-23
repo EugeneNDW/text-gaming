@@ -13,7 +13,7 @@ class ManagerService(
 
     fun changeLocation(userId: Long, locationName: String) {
         val game = gameService.getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
-        val location = locationService.findByName(locationName)
+        val location = locationService.getByName(locationName)
 
         game.location = location.name
         game.currentConversationId = location.startId

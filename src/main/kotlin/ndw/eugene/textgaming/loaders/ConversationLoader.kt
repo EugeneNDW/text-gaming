@@ -2,12 +2,10 @@ package ndw.eugene.textgaming.loaders
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import ndw.eugene.textgaming.data.entity.ConversationEntity
 import ndw.eugene.textgaming.data.entity.LocationEntity
@@ -17,12 +15,7 @@ import ndw.eugene.textgaming.data.repository.LocationRepository
 import ndw.eugene.textgaming.data.repository.OptionRepository
 import ndw.eugene.textgaming.services.ChoiceService
 import ndw.eugene.textgaming.services.CounterService
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.Resource
 import org.springframework.stereotype.Component
-import org.springframework.util.FileCopyUtils
-import java.io.InputStreamReader
-import java.util.Arrays
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -35,38 +28,16 @@ class ConversationLoader(
     private val choiceService: ChoiceService,
     private val counterService: CounterService,
 ) {
-
-    @Value("classpath:conversations/*.json")
-    lateinit var resources: Array<Resource>
-
-    fun loadLocations() {
-        logger.info { "start loading conversations" }
-        Arrays.stream(resources)
-            .forEach { r ->
-                logger.info { "start loading ${r.filename}" }
-                val locationName = r.filename?.split(".")?.get(0) ?: throw IllegalArgumentException()
-                val text = InputStreamReader(r.inputStream, "UTF-8").use {
-                    FileCopyUtils.copyToString(it)
-                }
-                val conversation = Json.decodeFromString<Conversation>(text)
-                if (locationRepository.findByName(locationName.uppercase()) == null) {
-                    loadLocation(locationName.uppercase(), conversation)
-                }
-                logger.info { "${r.filename} was loaded" }
-            }
-        logger.info { "all conversations were loaded" }
-    }
-
-    private fun loadLocation(locationName: String, conversation: Conversation) {
+    fun loadLocation(conversation: Conversation) {
         //save location
         val locationEntity = LocationEntity()
-        logger.info { "migrate location: $locationName" }
-        locationEntity.name = locationName
+        logger.info { "migrate location: ${conversation.locationName}" }
+        locationEntity.name = conversation.locationName
         locationEntity.startId = 0
         val savedLocation = locationRepository.save(locationEntity)
         val locationId = savedLocation.id ?: throw IllegalArgumentException("location saved incorrectly")
-        logger.info { "location $locationName saved" }
-        logger.info { "start saving conversations for location: $locationName" }
+        logger.info { "location ${conversation.locationName} saved" }
+        logger.info { "start saving conversations for location: ${conversation.locationName}" }
 
         //save conversations
         val conversationIdToId = HashMap<Long, Long>()
@@ -82,7 +53,7 @@ class ConversationLoader(
             conversationIdToId[it.id] = savedConversation.id!!
             savedConversationCounter++
         }
-        logger.info { "$savedConversationCounter conversationParts were saved for location $locationName" }
+        logger.info { "$savedConversationCounter conversationParts were saved for location ${conversation.locationName}" }
 
         conversation.conversationParts.stream().map { it.processorId }.filter { !it.isNullOrBlank() }
             .forEach { processor ->
@@ -112,18 +83,19 @@ class ConversationLoader(
         savedLocation.startId = conversationIdToId[savedLocation.startId]
             ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
         locationRepository.save(savedLocation)
-        logger.info { "$savedOptionCounter options were saved for location $locationName" }
+        logger.info { "$savedOptionCounter options were saved for location ${conversation.locationName}" }
     }
 }
 
 @Serializable
-private data class Conversation(
+data class Conversation(
+    val locationName: String,
     val conversationParts: List<ConversationPartDto>,
     val options: List<OptionDto>
 )
 
 @Serializable
-private data class ConversationPartDto(
+data class ConversationPartDto(
     val id: Long,
     val character: String,
     val text: String,
@@ -132,7 +104,7 @@ private data class ConversationPartDto(
 )
 
 @Serializable
-private data class OptionDto(
+data class OptionDto(
     @Serializable(with = UUIDSerializer::class)
     val uuid: UUID,
     val fromId: Long,

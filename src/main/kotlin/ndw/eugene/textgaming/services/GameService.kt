@@ -30,12 +30,6 @@ class GameService(
     private val illustrationsLoader: IllustrationsLoader,
     private val conditionService: ConditionService
 ) {
-    @PostConstruct
-    fun initGameService() {
-        conversationLoader.loadLocations()
-        logger.info { "game service was initialized" }
-    }
-
     fun userHasGameActive(userId: Long): Boolean {
         val usersCurrentGame = getUsersCurrentGame(userId)
         return usersCurrentGame != null && !usersCurrentGame.isEnded
