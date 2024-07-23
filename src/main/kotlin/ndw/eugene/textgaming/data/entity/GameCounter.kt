@@ -4,8 +4,6 @@ import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -23,9 +21,9 @@ class GameCounter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "counter_type")
-    lateinit var counterType: CounterType
+    @ManyToOne
+    @JoinColumn(name = "counter_id", nullable = false)
+    lateinit var counter: Counter
 
     @Column(nullable = false, name = "counter_value")
     var counterValue: Int = 0
@@ -47,8 +45,4 @@ class GameCounter {
     override fun hashCode(): Int {
         return GameCounter::class.hashCode()
     }
-}
-
-enum class CounterType {
-    BOY_RELATIONSHIP, BAD_GUY
 }

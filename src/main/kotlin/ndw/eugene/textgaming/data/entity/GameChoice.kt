@@ -3,15 +3,12 @@ package ndw.eugene.textgaming.data.entity
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import ndw.eugene.textgaming.content.Choice
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
@@ -23,7 +20,8 @@ class GameChoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "choice_id", nullable = false)
     lateinit var choice: Choice
 
     @ManyToOne

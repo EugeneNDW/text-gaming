@@ -1,13 +1,10 @@
-package ndw.eugene.textgaming.content
+package ndw.eugene.textgaming.services
 
 import ndw.eugene.textgaming.data.entity.GameState
-import ndw.eugene.textgaming.services.ChoiceService
-import ndw.eugene.textgaming.services.CounterService
-import ndw.eugene.textgaming.services.LocationService
 import org.springframework.stereotype.Component
 
 @Component
-class ConversationProcessors(
+class ProcessorService(
     private val choiceService: ChoiceService,
     private val locationService: LocationService,
     private val counterService: CounterService,

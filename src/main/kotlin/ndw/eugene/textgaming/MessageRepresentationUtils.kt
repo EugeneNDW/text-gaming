@@ -6,11 +6,11 @@ import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
 import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
-import ndw.eugene.textgaming.content.Choice
-import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.ConversationPart
 import ndw.eugene.textgaming.data.UserOption
+import ndw.eugene.textgaming.data.entity.Choice
 import ndw.eugene.textgaming.data.entity.GameState
+import ndw.eugene.textgaming.data.entity.LocationEntity
 
 private const val DEFAULT_OPTION_TEXT = "..."
 private const val DEFAULT_OPTION_BUTTON_TEXT = "continue..."
@@ -134,12 +134,12 @@ fun optionsToButtons(options: List<UserOption>): InlineKeyboardMarkup {
     return InlineKeyboardMarkup.create(buttons)
 }
 
-fun getLocationsButtons(gameState: GameState): InlineKeyboardMarkup {
+fun getLocationsButtons(gameState: GameState, locations: List<LocationEntity>): InlineKeyboardMarkup {
     val buttons: MutableList<List<InlineKeyboardButton>> = mutableListOf()
 
-    Location.values().forEach {
+    locations.forEach {
         var text = it.name
-        if (it == gameState.location) {
+        if (it.name == gameState.location) {
             text += "✅"
         }
         buttons.add(
@@ -155,15 +155,15 @@ fun getLocationsButtons(gameState: GameState): InlineKeyboardMarkup {
     return InlineKeyboardMarkup.create(buttons)
 }
 
-fun getChoicesButtons(gameState: GameState): InlineKeyboardMarkup {
+fun getChoicesButtons(gameState: GameState, allChoices: List<Choice>): InlineKeyboardMarkup {
     val buttons: MutableList<List<InlineKeyboardButton>> = mutableListOf()
     val chosen = gameState.gameChoices.map { it.choice }
-    val notChosen = Choice.values().toSet().minus(chosen.toSet())
+    val notChosen = allChoices.minus(chosen.toSet())
 
     chosen.forEach {
         buttons.add(
             listOf(
-                createUnchooseButtonForChoice(it)
+                createUnchooseButtonForChoice(it.name)
             )
         )
     }
@@ -171,7 +171,7 @@ fun getChoicesButtons(gameState: GameState): InlineKeyboardMarkup {
     notChosen.forEach {
         buttons.add(
             listOf(
-                createChooseButtonForChoice(it)
+                createChooseButtonForChoice(it.name)
             )
         )
     }
@@ -179,21 +179,21 @@ fun getChoicesButtons(gameState: GameState): InlineKeyboardMarkup {
     return InlineKeyboardMarkup.create(buttons)
 }
 
-private fun createUnchooseButtonForChoice(choice: Choice): InlineKeyboardButton.CallbackData {
-    val text = choice.name + "✅"
+private fun createUnchooseButtonForChoice(choice: String): InlineKeyboardButton.CallbackData {
+    val text = choice + "✅"
 
     return InlineKeyboardButton.CallbackData(
         text = text,
-        callbackData = "${ButtonId.UNCHOOSE.name}$BUTTON_ID_DELIMITER${choice.name}"
+        callbackData = "${ButtonId.UNCHOOSE.name}$BUTTON_ID_DELIMITER${choice}"
     )
 }
 
-private fun createChooseButtonForChoice(choice: Choice): InlineKeyboardButton.CallbackData {
-    val text = choice.name + "❌"
+private fun createChooseButtonForChoice(choice: String): InlineKeyboardButton.CallbackData {
+    val text = choice + "❌"
 
     return InlineKeyboardButton.CallbackData(
         text = text,
-        callbackData = "${ButtonId.CHOOSE.name}$BUTTON_ID_DELIMITER${choice.name}"
+        callbackData = "${ButtonId.CHOOSE.name}$BUTTON_ID_DELIMITER${choice}"
     )
 }
 

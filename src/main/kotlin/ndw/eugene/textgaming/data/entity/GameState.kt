@@ -5,15 +5,12 @@ import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
-import ndw.eugene.textgaming.content.Location
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
@@ -31,9 +28,8 @@ class GameState {
     @Column(nullable = false, name = "user_id")
     var userId: Long = 0
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "location")
-    lateinit var location: Location
+    lateinit var location: String
 
     @Column(nullable = false, name = "current_conversation_id")
     var currentConversationId: Long = 0

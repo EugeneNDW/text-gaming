@@ -1,28 +1,38 @@
 package ndw.eugene.textgaming.services
 
 import mu.KotlinLogging
-import ndw.eugene.textgaming.content.Choice
+import ndw.eugene.textgaming.data.entity.Choice
 import ndw.eugene.textgaming.data.entity.GameChoice
 import ndw.eugene.textgaming.data.entity.GameState
+import ndw.eugene.textgaming.data.repository.ChoiceRepository
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
 @Service
-class ChoiceService {
-    fun addChoice(gameState: GameState, choice: String) {
-        val gameChoice = GameChoice()
-        gameChoice.choice = Choice.valueOf(choice) //todo remake to just string
-        gameState.addChoice(gameChoice)
-        logger.info { "user: ${gameState.userId} made choice: $choice in game: ${gameState.id}" }
+class ChoiceService(
+    private val choiceRepository: ChoiceRepository
+) {
+
+    fun getAllChoices(): MutableList<Choice> {
+        return choiceRepository.findAll()
     }
 
-    fun checkChoiceHasBeenMade(gameState: GameState, choice: Choice): Boolean {
-        val usersChoices = gameState.gameChoices
+    fun createChoiceIfNotExists(choiceName: String) {
+        val choiceByName = choiceRepository.findByName(choiceName)
+        if (choiceByName != null) {
+            return
+        }
 
-        val result = usersChoices.find { it.choice == choice } != null
+        val choice = Choice()
+        choice.name = choiceName
+        choiceRepository.save(choice)
+    }
 
-        logger.info { "user: ${gameState.userId} in game: ${gameState.id} is checking choice: $choice, result is: $result" }
-        return result
+    fun addChoice(gameState: GameState, choice: String) {
+        val gameChoice = GameChoice()
+        gameChoice.choice = choiceRepository.findByName(choice) ?: throw IllegalArgumentException("can't find choice")
+        gameState.addChoice(gameChoice)
+        logger.info { "user: ${gameState.userId} made choice: $choice in game: ${gameState.id}" }
     }
 }

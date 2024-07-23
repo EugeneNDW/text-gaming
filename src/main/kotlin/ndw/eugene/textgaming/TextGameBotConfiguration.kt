@@ -12,13 +12,8 @@ import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.TelegramFile
 import com.github.kotlintelegrambot.logging.LogLevel
 import mu.KotlinLogging
-import ndw.eugene.textgaming.content.Choice
-import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.data.GameMessage
-import ndw.eugene.textgaming.services.AuthService
-import ndw.eugene.textgaming.services.FeedbackService
-import ndw.eugene.textgaming.services.GameService
-import ndw.eugene.textgaming.services.ManagerService
+import ndw.eugene.textgaming.services.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -35,7 +30,9 @@ class TextGameBotConfiguration {
         gameService: GameService,
         managerService: ManagerService,
         feedbackService: FeedbackService,
-        authService: AuthService
+        authService: AuthService,
+        choiceService: ChoiceService,
+        locationService: LocationService,
     ): Bot {
         return bot {
             logLevel = decideLogLevel(botLogLevel)
@@ -132,9 +129,8 @@ class TextGameBotConfiguration {
                 }
                 command("start_in") {
                     if (!checkAdmin(message)) return@command
-                    val location = Location.valueOf(args[0].uppercase())
                     val chatId = message.chat.id
-                    val result = gameService.startNewGameForUser(chatId, location)
+                    val result = gameService.startNewGameForUser(chatId, args[0].uppercase())
 
                     bot.sendGameMessage(chatId, result)
                 }
@@ -149,14 +145,14 @@ class TextGameBotConfiguration {
                     if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
-                    val buttons = getLocationsButtons(gameState)
+                    val buttons = getLocationsButtons(gameState, locationService.findAll())
                     bot.sendMessage(chatId = ChatId.fromId(chatId), text = "LOCATIONS", replyMarkup = buttons)
                 }
                 command("choices") {
                     if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val gameState = gameService.getUsersCurrentGame(chatId) ?: return@command
-                    val buttons = getChoicesButtons(gameState)
+                    val buttons = getChoicesButtons(gameState, choiceService.getAllChoices())
                     bot.sendMessage(chatId = ChatId.fromId(chatId), text = "CHOICES", replyMarkup = buttons)
                 }
                 callbackQuery {
@@ -167,7 +163,7 @@ class TextGameBotConfiguration {
                         managerService.changeLocation(chatId, locationName)
 
                         val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
-                        val buttons = getLocationsButtons(gameState)
+                        val buttons = getLocationsButtons(gameState, locationService.findAll())
                         bot.editMessageText(
                             chatId = ChatId.fromId(chatId),
                             messageId = message.messageId,
@@ -184,7 +180,7 @@ class TextGameBotConfiguration {
                         val choiceName = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
                         managerService.addChoice(chatId, choiceName)
                         val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
-                        val buttons = getChoicesButtons(gameState)
+                        val buttons = getChoicesButtons(gameState, choiceService.getAllChoices())
 
                         bot.editMessageText(
                             chatId = ChatId.fromId(chatId),
@@ -200,9 +196,9 @@ class TextGameBotConfiguration {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
                         val choiceName = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
-                        managerService.removeChoice(chatId, Choice.valueOf(choiceName))
+                        managerService.removeChoice(chatId, choiceName)
                         val gameState = gameService.getUsersCurrentGame(chatId) ?: return@callbackQuery
-                        val buttons = getChoicesButtons(gameState)
+                        val buttons = getChoicesButtons(gameState, choiceService.getAllChoices())
 
                         bot.editMessageText(
                             chatId = ChatId.fromId(chatId),

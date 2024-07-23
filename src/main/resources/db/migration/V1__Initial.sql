@@ -5,10 +5,15 @@ CREATE TABLE game_state (
     current_conversation_id BIGINT NOT NULL
 );
 
+CREATE TABLE choices (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
 CREATE TABLE game_choice (
     id BIGSERIAL PRIMARY KEY,
     game_id BIGINT NOT NULL REFERENCES game_state(id),
-    choice TEXT NOT NULL
+    choice_id BIGINT NOT NULL REFERENCES choices(id)
 );
 
 CREATE TABLE game_history (

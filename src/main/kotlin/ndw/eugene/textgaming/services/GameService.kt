@@ -2,8 +2,6 @@ package ndw.eugene.textgaming.services
 
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
-import ndw.eugene.textgaming.content.ConversationProcessors
-import ndw.eugene.textgaming.content.Location
 import ndw.eugene.textgaming.controllers.*
 import ndw.eugene.textgaming.data.ConversationPart
 import ndw.eugene.textgaming.data.GameMessage
@@ -28,7 +26,7 @@ class GameService(
     private val conversationRepository: ConversationRepository,
     private val optionRepository: OptionRepository,
     private val locationRepository: LocationRepository,
-    private val conversationProcessors: ConversationProcessors,
+    private val processorService: ProcessorService,
     private val illustrationsLoader: IllustrationsLoader,
     private val conditionService: ConditionService
 ) {
@@ -43,7 +41,7 @@ class GameService(
         return usersCurrentGame != null && !usersCurrentGame.isEnded
     }
 
-    fun startNewGameForUser(userId: Long, location: Location = Location.DOCKS): GameMessage {
+    fun startNewGameForUser(userId: Long, location: String = "DOCKS"): GameMessage {
         val game = createGameForUser(userId, location)
         processConversation(game)
         val savedGame = gameStateRepository.save(game)
@@ -133,8 +131,8 @@ class GameService(
         }
     }
 
-    private fun createGameForUser(userId: Long, startLocation: Location): GameState {
-        val locationEntity = locationRepository.findByName(startLocation.name)
+    private fun createGameForUser(userId: Long, startLocation: String): GameState {
+        val locationEntity = locationRepository.findByName(startLocation)
         val conversationStartId = locationEntity?.startId ?: throw IllegalArgumentException()
         val game = GameState()
         game.userId = userId
@@ -152,11 +150,11 @@ class GameService(
     }
 
     private fun processConversation(gameState: GameState) {
-        conversationProcessors.executeProcessor(gameState, getCurrentConversation(gameState).processor)
+        processorService.executeProcessor(gameState, getCurrentConversation(gameState).processor)
     }
 
     private fun progressConversation(gameState: GameState, optionId: UUID) {
-        val option = getOptions(gameState.currentConversationId, gameState.location.name)
+        val option = getOptions(gameState.currentConversationId, gameState.location)
             .find { it.uuid == optionId } ?: throw IllegalArgumentException("no option with id: $optionId")
         if (!conditionService.evaluateCondition(
                 option.condition,
@@ -169,7 +167,7 @@ class GameService(
     }
 
     private fun getCurrentConversation(gameState: GameState): ConversationPart {
-        val locationName = gameState.location.name
+        val locationName = gameState.location
         val conversation =
             conversationRepository.getByLocationAndConversationId(locationName, gameState.currentConversationId)
         return ConversationPart(
@@ -182,7 +180,7 @@ class GameService(
     }
 
     private fun getAvailableOptions(gameState: GameState): List<UserOption> {
-        val options = getOptions(gameState.currentConversationId, gameState.location.name).map {
+        val options = getOptions(gameState.currentConversationId, gameState.location).map {
             val selected = isOptionSelected(gameState, it.uuid)
             val available = conditionService.evaluateCondition(it.condition, gameState)
 

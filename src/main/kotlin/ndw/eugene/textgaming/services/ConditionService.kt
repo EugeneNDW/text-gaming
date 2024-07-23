@@ -1,7 +1,5 @@
 package ndw.eugene.textgaming.services
 
-import ndw.eugene.textgaming.content.Choice
-import ndw.eugene.textgaming.data.entity.CounterType
 import ndw.eugene.textgaming.data.entity.GameState
 import org.springframework.stereotype.Service
 import java.util.*
@@ -128,19 +126,18 @@ class ConditionService {
         }
     }
 
-    private fun checkCondition(condition: String, gameState: GameState): Boolean {
-        return gameState.gameChoices.map { it.choice }.contains(Choice.valueOf(condition))
+    private fun checkCondition(choiceName: String, gameState: GameState): Boolean {
+        val gameChoice = gameState.gameChoices.find { it.choice.name == choiceName }
+        return gameChoice != null
     }
 
-    private fun moreThanCondition(number: String, condition: String, gameState: GameState): Boolean {
-        val counterType = CounterType.valueOf(condition)
-        val counterValue = gameState.gameCounters.find { it.counterType == counterType }?.counterValue ?: 0
+    private fun moreThanCondition(number: String, counterName: String, gameState: GameState): Boolean {
+        val counterValue = gameState.gameCounters.find { it.counter.name == counterName }?.counterValue ?: 0
         return counterValue < number.toInt()
     }
 
-    private fun equals(number: String, condition: String, gameState: GameState): Boolean {
-        val counterType = CounterType.valueOf(condition)
-        val counterValue = gameState.gameCounters.find { it.counterType == counterType }?.counterValue ?: 0
+    private fun equals(number: String, counterName: String, gameState: GameState): Boolean {
+        val counterValue = gameState.gameCounters.find { it.counter.name == counterName }?.counterValue ?: 0
         return counterValue == number.toInt()
     }
 
