@@ -8,6 +8,8 @@ services:
     container_name: text-gaming
     env_file:
       - src/main/resources/.env
+    ports:
+      - "8090:8090"
     depends_on:
       - text-gaming-postgres-db
   text-gaming-postgres-db:
