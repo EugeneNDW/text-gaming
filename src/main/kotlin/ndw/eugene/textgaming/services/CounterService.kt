@@ -40,7 +40,8 @@ class CounterService(
         }
 
         val newCounter = GameCounter()
-        newCounter.counter = counterRepository.findByName(name) ?: throw IllegalArgumentException("can't find counter with name $name")
+        newCounter.counter =
+            counterRepository.findByName(name) ?: throw IllegalArgumentException("can't find counter with name $name")
         gameState.addCounter(newCounter)
         return newCounter
     }

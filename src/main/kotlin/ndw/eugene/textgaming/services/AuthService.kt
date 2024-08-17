@@ -2,7 +2,6 @@ package ndw.eugene.textgaming.services
 
 import ndw.eugene.textgaming.data.entity.UserInfo
 import ndw.eugene.textgaming.data.repository.UserInfoRepository
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User
 import org.springframework.stereotype.Service
 
 @Service
@@ -29,6 +28,6 @@ class AuthService(private val userInfoRepository: UserInfoRepository) {
     }
 
     fun getAllUsers(): Iterable<UserInfo> {
-        return userInfoRepository.findAll();
+        return userInfoRepository.findAll()
     }
 }

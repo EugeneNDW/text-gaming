@@ -1,6 +1,6 @@
 package ndw.eugene.textgaming.data
 
-import java.util.UUID
+import java.util.*
 
 data class Option(
     val uuid: UUID,

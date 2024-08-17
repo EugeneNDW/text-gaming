@@ -92,11 +92,10 @@ class TextGameBotConfiguration {
                         WELCOME_MESSAGE
                     }
 
-                    val startGameButton = createStartGameButton()
                     bot.sendMessage(
                         chatId = ChatId.fromId(chatId),
                         text = responseMessage,
-                        replyMarkup = startGameButton,
+                        replyMarkup = createStartGameButton(),
                     )
                 }
 
@@ -122,6 +121,7 @@ class TextGameBotConfiguration {
 
                 //test buttons
                 command("users") {
+                    if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     var result = ""
                     authService.getAllUsers().forEach { result = result + "," + it.id }

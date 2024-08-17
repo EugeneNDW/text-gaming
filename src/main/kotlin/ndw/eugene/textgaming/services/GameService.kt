@@ -1,6 +1,5 @@
 package ndw.eugene.textgaming.services
 
-import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
 import ndw.eugene.textgaming.controllers.*
 import ndw.eugene.textgaming.data.ConversationPart
@@ -12,16 +11,14 @@ import ndw.eugene.textgaming.data.repository.ConversationRepository
 import ndw.eugene.textgaming.data.repository.GameStateRepository
 import ndw.eugene.textgaming.data.repository.LocationRepository
 import ndw.eugene.textgaming.data.repository.OptionRepository
-import ndw.eugene.textgaming.loaders.ConversationLoader
 import ndw.eugene.textgaming.loaders.IllustrationsLoader
 import org.springframework.stereotype.Service
-import java.util.UUID
+import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
 @Service
 class GameService(
-    private val conversationLoader: ConversationLoader,
     private val gameStateRepository: GameStateRepository,
     private val conversationRepository: ConversationRepository,
     private val optionRepository: OptionRepository,

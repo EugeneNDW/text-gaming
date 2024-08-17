@@ -3,10 +3,12 @@ package ndw.eugene.textgaming.controllers
 import ndw.eugene.textgaming.services.GameService
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
+@RequestMapping("/games/1")
 class GameController(private val gameService: GameService) {
     //todo add choices in game
     //todo get choices in game
@@ -19,7 +21,7 @@ class GameController(private val gameService: GameService) {
     ): CreateLocationResponse {
         return gameService.createLocation(createLocationRequest)
     }
-    //todo get locations  in game
+    //todo get locations in game
 
     @PostMapping("/conversations")
     fun createConversation(

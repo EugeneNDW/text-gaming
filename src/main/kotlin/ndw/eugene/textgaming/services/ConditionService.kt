@@ -30,6 +30,7 @@ class ConditionService {
         val infixCondition = infixToPostfix(condition)
         return evaluatePostfix(infixCondition, gameState)
     }
+
     fun evaluatePostfix(postfix: List<String>, gameState: GameState): Boolean {
         val stack = Stack<Boolean>()
         for (token in postfix) {
@@ -61,15 +62,18 @@ class ConditionService {
                 isOperand(token) -> {
                     output.add(token)
                 }
+
                 token == OPEN_PARENTHESES -> {
                     operators.push(token)
                 }
+
                 token == CLOSE_PARENTHESES -> {
                     while (operators.peek() != OPEN_PARENTHESES) {
                         output.add(operators.pop())
                     }
                     operators.pop()
                 }
+
                 isOperator(token) -> {
                     while (!operators.isEmpty() && hasPrecedence(token, operators.peek())) {
                         output.add(operators.pop())
@@ -108,18 +112,22 @@ class ConditionService {
     private fun evaluateExpression(token: String, gameState: GameState): Boolean {
         val parts = token.split(CONDITION_DELIMITER)
         return when {
-            token.startsWith(CHECK_NOT_CONDITION_PREFIX) ->{
+            token.startsWith(CHECK_NOT_CONDITION_PREFIX) -> {
                 !checkCondition(parts[1], gameState)
             }
+
             token.startsWith(CHECK_CONDITION_PREFIX) -> {
                 checkCondition(parts[1], gameState)
             }
+
             token.startsWith(MORETHAN_CONDITION_PREFIX) -> {
                 moreThanCondition(parts[1], parts[2], gameState)
             }
+
             token.startsWith(EQUALS_CONDITION_PREFIX) -> {
                 equals(parts[1], parts[2], gameState)
             }
+
             else -> {
                 false
             }

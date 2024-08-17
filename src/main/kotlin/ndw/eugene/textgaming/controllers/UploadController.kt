@@ -19,7 +19,7 @@ class UploadController(
 ) {
     @PostMapping(consumes = ["multipart/form-data"])
     fun uploadLocation(@RequestPart("files") files: List<MultipartFile>) {
-        val conversations = files
+        files
             .map { file ->
                 val content = file.inputStream.bufferedReader().use { it.readText() }
                 Json.decodeFromString<Conversation>(content)

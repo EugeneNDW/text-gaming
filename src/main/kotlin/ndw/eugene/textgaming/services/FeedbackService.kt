@@ -13,7 +13,7 @@ class FeedbackService(
     private val reportRepository: ReportRepository,
     private val feedbackRepository: FeedbackRepository
 ) {
-    
+
     fun writeReport(userId: Long, reportText: String) {
         val currentGameState = gameStateRepository.findGameStateWithMaxIdByUserId(userId)
 

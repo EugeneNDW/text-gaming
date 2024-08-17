@@ -8,7 +8,7 @@ interface GameStateRepository : CrudRepository<GameState, Long> {
 
     @Query(
         "SELECT gs FROM GameState gs " +
-            "WHERE gs.id = (SELECT MAX(sgs.id) FROM GameState sgs WHERE sgs.userId = :userId)"
+                "WHERE gs.id = (SELECT MAX(sgs.id) FROM GameState sgs WHERE sgs.userId = :userId)"
     )
     fun findGameStateWithMaxIdByUserId(userId: Long): GameState?
 }

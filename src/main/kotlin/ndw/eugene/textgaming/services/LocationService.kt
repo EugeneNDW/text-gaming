@@ -19,7 +19,8 @@ class LocationService(
     }
 
     fun getByName(locationName: String): LocationEntity {
-        return locationRepository.findByName(locationName) ?: throw IllegalArgumentException("cant find location with name $locationName")
+        return locationRepository.findByName(locationName)
+            ?: throw IllegalArgumentException("cant find location with name $locationName")
     }
 
     fun changeLocationTo(gameState: GameState, location: String) {
