@@ -7,10 +7,7 @@ import ndw.eugene.textgaming.data.GameMessage
 import ndw.eugene.textgaming.data.Option
 import ndw.eugene.textgaming.data.UserOption
 import ndw.eugene.textgaming.data.entity.*
-import ndw.eugene.textgaming.data.repository.ConversationRepository
-import ndw.eugene.textgaming.data.repository.GameStateRepository
-import ndw.eugene.textgaming.data.repository.LocationRepository
-import ndw.eugene.textgaming.data.repository.OptionRepository
+import ndw.eugene.textgaming.data.repository.*
 import ndw.eugene.textgaming.loaders.IllustrationsLoader
 import org.springframework.stereotype.Service
 import java.util.*
@@ -23,6 +20,8 @@ class GameService(
     private val conversationRepository: ConversationRepository,
     private val optionRepository: OptionRepository,
     private val locationRepository: LocationRepository,
+    private val choiceRepository: ChoiceRepository,
+    private val counterRepository: CounterRepository,
     private val processorService: ProcessorService,
     private val illustrationsLoader: IllustrationsLoader,
     private val conditionService: ConditionService
@@ -64,62 +63,49 @@ class GameService(
     }
 
     fun createLocation(
-        location: CreateLocationRequest
-    ): CreateLocationResponse {
+        location: LocationRequest
+    ): LocationEntity {
         val locationEntity = LocationEntity()
         locationEntity.name = location.name
         locationEntity.startId = location.startId
-        val savedLocation = locationRepository.save(locationEntity)
-
-        return CreateLocationResponse(savedLocation.id!!, savedLocation.name, savedLocation.startId)
+        return locationRepository.save(locationEntity)
     }
 
     fun createConversation(
-        createConversation: CreateConversationRequest
-    ): CreateConversationResponse {
+        locationId: Long,
+        createConversation: ConversationRequest
+    ): ConversationEntity {
+        val location = locationRepository.findById(locationId).orElseThrow {
+            IllegalArgumentException("Location not found")
+        }
         val newConversation = ConversationEntity()
-        newConversation.locationId = createConversation.locationId
+        newConversation.locationId = location.id!!
         newConversation.conversationText = createConversation.conversationText
         newConversation.person = createConversation.person
         newConversation.illustration = createConversation.illustration
         newConversation.processorId = createConversation.processorId
 
-        val savedConversation = conversationRepository.save(newConversation)
-
-        return CreateConversationResponse(
-            savedConversation.id!!,
-            savedConversation.person,
-            savedConversation.conversationText,
-            savedConversation.processorId,
-            savedConversation.illustration,
-            savedConversation.locationId
-        )
+        return conversationRepository.save(newConversation)
     }
 
     fun createOptions(
+        locationId: Long,
         options: List<OptionRequest>
-    ): List<OptionResponse> {
+    ): MutableList<OptionEntity> {
+        val location = locationRepository.findById(locationId).orElseThrow {
+            IllegalArgumentException("Location not found")
+        }
         val entities = options.map {
             val option = OptionEntity()
             option.fromId = it.fromId
             option.toId = it.toId
             option.optionText = it.optionText
             option.optionCondition = it.optionConditionId
-            option.locationId = it.locationId
+            option.locationId = location.id!!
             option
         }.toList()
 
-        return optionRepository.saveAll(entities).map {
-            val option = OptionResponse(
-                it.id!!,
-                it.fromId,
-                it.toId,
-                it.optionText,
-                it.optionCondition,
-                it.locationId,
-            )
-            option
-        }
+        return optionRepository.saveAll(entities)
     }
 
     private fun createGameForUser(userId: Long, startLocation: String): GameState {
@@ -202,5 +188,38 @@ class GameService(
             )
             option
         }
+    }
+
+    fun getOptionsByLocation(locationId: Long): List<OptionEntity> {
+        return optionRepository.findByLocationId(locationId)
+    }
+
+    fun getConversationsByLocation(locationId: Long): List<ConversationEntity> {
+        return conversationRepository.findByLocationId(locationId)
+    }
+
+    fun getAllLocations(): List<LocationEntity> {
+        return locationRepository.findAll()
+    }
+
+    fun getAllCounters(): List<Counter> {
+        return counterRepository.findAll()
+    }
+
+    fun getAllChoices(): List<Choice> {
+        return choiceRepository.findAll()
+    }
+
+    fun createCounter(counterRequest: CounterRequest): Counter {
+        val counterEntity = Counter()
+        counterEntity.name = counterRequest.name
+
+        return counterRepository.save(counterEntity)
+    }
+
+    fun createChoices(choiceRequest: ChoiceRequest): Choice {
+        val choiceEntity = Choice()
+        choiceEntity.name = choiceRequest.name
+        return choiceRepository.save(choiceEntity)
     }
 }
