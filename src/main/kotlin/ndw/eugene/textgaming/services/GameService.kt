@@ -1,5 +1,6 @@
 package ndw.eugene.textgaming.services
 
+import jakarta.persistence.EntityNotFoundException
 import mu.KotlinLogging
 import ndw.eugene.textgaming.controllers.*
 import ndw.eugene.textgaming.data.ConversationPart
@@ -10,16 +11,19 @@ import ndw.eugene.textgaming.data.entity.*
 import ndw.eugene.textgaming.data.repository.*
 import ndw.eugene.textgaming.loaders.IllustrationsLoader
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
 @Service
+@Transactional
 class GameService(
     private val gameStateRepository: GameStateRepository,
     private val conversationRepository: ConversationRepository,
     private val optionRepository: OptionRepository,
     private val locationRepository: LocationRepository,
+    private val characterRepository: CharacterRepository,
     private val choiceRepository: ChoiceRepository,
     private val counterRepository: CounterRepository,
     private val processorService: ProcessorService,
@@ -67,7 +71,19 @@ class GameService(
     ): LocationEntity {
         val locationEntity = LocationEntity()
         locationEntity.name = location.name
-        locationEntity.startId = location.startId
+        locationEntity.startId = -1
+        val savedLocation = locationRepository.save(locationEntity)
+
+        val conversationRequest = location.firstConversationPart
+        val conversation = ConversationEntity()
+        conversation.character = characterRepository.findByName(conversationRequest.person) ?: throw IllegalArgumentException("Character not found")
+        conversation.illustration = conversationRequest.illustration
+        conversation.conversationText = conversationRequest.conversationText
+        conversation.processorId = conversationRequest.processorId
+        conversation.locationId = savedLocation.id!!
+        val savedConversation = conversationRepository.save(conversation)
+
+        locationEntity.startId = savedConversation.id!!
         return locationRepository.save(locationEntity)
     }
 
@@ -78,34 +94,16 @@ class GameService(
         val location = locationRepository.findById(locationId).orElseThrow {
             IllegalArgumentException("Location not found")
         }
+        val character = characterRepository.findByName(createConversation.person) ?: throw IllegalArgumentException("Character not found")
+
         val newConversation = ConversationEntity()
         newConversation.locationId = location.id!!
         newConversation.conversationText = createConversation.conversationText
-        newConversation.person = createConversation.person
+        newConversation.character = character
         newConversation.illustration = createConversation.illustration
         newConversation.processorId = createConversation.processorId
 
         return conversationRepository.save(newConversation)
-    }
-
-    fun createOptions(
-        locationId: Long,
-        options: List<OptionRequest>
-    ): MutableList<OptionEntity> {
-        val location = locationRepository.findById(locationId).orElseThrow {
-            IllegalArgumentException("Location not found")
-        }
-        val entities = options.map {
-            val option = OptionEntity()
-            option.fromId = it.fromId
-            option.toId = it.toId
-            option.optionText = it.optionText
-            option.optionCondition = it.optionConditionId
-            option.locationId = location.id!!
-            option
-        }.toList()
-
-        return optionRepository.saveAll(entities)
     }
 
     private fun createGameForUser(userId: Long, startLocation: String): GameState {
@@ -149,7 +147,7 @@ class GameService(
             conversationRepository.getByLocationAndConversationId(locationName, gameState.currentConversationId)
         return ConversationPart(
             conversation.id!!,
-            conversation.person,
+            conversation.character!!.name,
             conversation.conversationText,
             illustrationsLoader.getIllustration(conversation.illustration),
             conversation.processorId
@@ -221,5 +219,102 @@ class GameService(
         val choiceEntity = Choice()
         choiceEntity.name = choiceRequest.name
         return choiceRepository.save(choiceEntity)
+    }
+
+    fun createOption(locationIdFromRequest: Long, conversationId: Long, request: CreateLinkRequest) {
+        val optionRequest = request.optionRequest
+        val toConversationId = if (request.toConversationId != null) {
+            request.toConversationId
+        } else if (request.conversationRequest != null) {
+            val conversationRequest = request.conversationRequest
+
+            val conversationToSave = ConversationEntity().apply {
+                character = characterRepository.findByName(conversationRequest.person) ?: throw IllegalArgumentException("Character not found")
+                conversationText = conversationRequest.conversationText
+                processorId = conversationRequest.processorId
+                illustration = conversationRequest.illustration
+                this.locationId = locationIdFromRequest
+            }
+            val savedConversation = conversationRepository.save(conversationToSave)
+            savedConversation.id!!
+        } else {
+            throw IllegalArgumentException("Either toConversationId or conversationRequest must be provided.")
+        }
+
+        val optionToSave = OptionEntity().apply {
+            locationId = locationIdFromRequest
+            fromId = conversationId
+            toId = toConversationId
+            optionText = optionRequest.optionText
+            optionCondition = optionRequest.optionConditionId
+        }
+        optionRepository.save(optionToSave)
+    }
+
+    fun getOptionsByConversationId(
+        locationId: Long,
+        conversationId: Long
+    ): List<OptionResponse> {
+        // Validate that the conversation exists and belongs to the location
+        val conversation = conversationRepository.findById(conversationId).orElseThrow {
+            EntityNotFoundException("Conversation with ID $conversationId not found")
+        }
+
+        if (conversation.locationId != locationId) {
+            throw IllegalArgumentException("Conversation ID $conversationId does not belong to Location ID $locationId")
+        }
+
+        val options = optionRepository.findByFromId(conversationId)
+
+        // Fetch all toConversations in one query to avoid N+1 problem
+        val toIds = options.map { it.toId }.distinct()
+        val toConversations = conversationRepository.findAllById(toIds)
+        val toConversationsMap = toConversations.associateBy { it.id }
+
+        return options.map { option ->
+            val toConversationEntity = toConversationsMap[option.toId]
+
+            val toConversationResponse = toConversationEntity?.let { toConv ->
+                ConversationResponse(
+                    id = toConv.id!!,
+                    person = toConv.character!!.name,
+                    conversationText = toConv.conversationText,
+                    processorId = toConv.processorId,
+                    illustration = toConv.illustration,
+                    locationId = toConv.locationId
+                )
+            }
+
+            OptionResponse(
+                id = option.id!!,
+                fromId = option.fromId,
+                toId = option.toId,
+                optionText = option.optionText,
+                optionConditionId = option.optionCondition,
+                locationId = conversation.locationId,
+                toConversation = toConversationResponse
+            )
+        }
+    }
+
+    fun createCharacter(request: CharacterRequest): CharacterResponse {
+        val characterEntity = CharacterEntity().apply {
+            name = request.name
+        }
+        val savedCharacter = characterRepository.save(characterEntity)
+        return CharacterResponse(
+            id = savedCharacter.id!!,
+            name = savedCharacter.name
+        )
+    }
+
+    fun getAllCharacters(): List<CharacterResponse> {
+        val characters: List<CharacterEntity> = characterRepository.findAll()
+        return characters.map { character ->
+            CharacterResponse(
+                id = character.id!!,
+                name = character.name
+            )
+        }
     }
 }

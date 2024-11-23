@@ -18,4 +18,6 @@ interface OptionRepository : JpaRepository<OptionEntity, UUID> {
     ): List<OptionEntity>
 
     fun findByLocationId(locationId: Long): List<OptionEntity>
+
+    fun findByFromId(fromId: Long): List<OptionEntity>
 }

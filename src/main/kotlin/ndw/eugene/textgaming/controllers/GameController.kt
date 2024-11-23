@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
+@CrossOrigin(origins = ["http://localhost:3000"])
 @RequestMapping("/games/1")
 class GameController(private val gameService: GameService) {
 
@@ -58,6 +59,15 @@ class GameController(private val gameService: GameService) {
         }
     }
 
+    @PostMapping("/locations/{locationId}/conversations/{conversationId}/options")
+    fun createOptionToConversation(
+        @PathVariable locationId: Long,
+        @PathVariable conversationId: Long,
+        @RequestBody request: CreateLinkRequest
+    ) {
+        gameService.createOption(locationId, conversationId, request)
+    }
+
     @PostMapping("/locations/{locationId}/conversations")
     fun createConversation(
         @PathVariable locationId: Long,
@@ -66,7 +76,7 @@ class GameController(private val gameService: GameService) {
         val conversationEntity = gameService.createConversation(locationId, conversationRequest)
         return ConversationResponse(
             conversationEntity.id!!,
-            conversationEntity.person,
+            conversationEntity.character!!.name,
             conversationEntity.conversationText,
             conversationEntity.processorId,
             conversationEntity.illustration,
@@ -82,29 +92,11 @@ class GameController(private val gameService: GameService) {
         return conversations.map { conversation ->
             ConversationResponse(
                 conversation.id!!,
-                conversation.person,
+                conversation.character!!.name,
                 conversation.conversationText,
                 conversation.processorId,
                 conversation.illustration,
                 conversation.locationId
-            )
-        }
-    }
-
-    @PostMapping("/locations/{locationId}/options")
-    fun addOptions(
-        @PathVariable locationId: Long,
-        @RequestBody options: List<OptionRequest>
-    ): List<OptionResponse> {
-        val optionEntities = gameService.createOptions(locationId, options)
-        return optionEntities.map { option ->
-            OptionResponse(
-                option.id!!,
-                option.fromId,
-                option.toId,
-                option.optionText,
-                option.optionCondition,
-                option.locationId
             )
         }
     }
@@ -121,20 +113,51 @@ class GameController(private val gameService: GameService) {
                 option.toId,
                 option.optionText,
                 option.optionCondition,
-                option.locationId
+                option.locationId,
+                null
             )
         }
     }
+
+    @GetMapping("/locations/{locationId}/conversations/{conversationId}/options")
+    fun getOptionsByConversationId(
+        @PathVariable locationId: Long,
+        @PathVariable conversationId: Long
+    ): List<OptionResponse> {
+        return gameService.getOptionsByConversationId(locationId, conversationId)
+    }
+
+    @PostMapping("/characters")
+    fun createCharacter(
+        @RequestBody request: CharacterRequest
+    ): CharacterResponse {
+        return gameService.createCharacter(request)
+    }
+
+    @GetMapping("/characters")
+    fun getAllCharacters(): List<CharacterResponse> {
+        return gameService.getAllCharacters()
+    }
 }
 
-data class LocationRequest(val name: String, val startId: Long)
+data class CreateLinkRequest(
+    val conversationRequest: ConversationRequest?,
+    val optionRequest: OptionRequest,
+    val toConversationId: Long?
+)
+
+data class LocationRequest(val name: String, val firstConversationPart: ConversationRequest)
 data class LocationResponse(val id: Long, val name: String, val startId: Long)
 data class ConversationRequest(
-    val conversationId: Long,
     val person: String,
     val conversationText: String,
     val processorId: String,
     val illustration: String,
+)
+
+data class OptionRequest(
+    val optionText: String,
+    val optionConditionId: String,
 )
 
 data class ConversationResponse(
@@ -146,20 +169,14 @@ data class ConversationResponse(
     val locationId: Long
 )
 
-data class OptionRequest(
-    val fromId: Long,
-    val toId: Long,
-    val optionText: String,
-    val optionConditionId: String,
-)
-
 data class OptionResponse(
     val id: UUID,
     val fromId: Long,
     val toId: Long,
     val optionText: String,
     val optionConditionId: String,
-    val locationId: Long
+    val locationId: Long,
+    val toConversation: ConversationResponse?
 )
 
 data class ChoiceRequest @JsonCreator constructor(
@@ -173,4 +190,13 @@ data class CounterRequest @JsonCreator constructor(
 )
 
 data class CounterResponse(val id: Long, val name: String)
+
+data class CharacterRequest @JsonCreator constructor(
+    @JsonProperty val name: String
+)
+
+data class CharacterResponse(
+    val id: Long,
+    val name: String
+)
 

@@ -7,9 +7,11 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import mu.KotlinLogging
+import ndw.eugene.textgaming.data.entity.CharacterEntity
 import ndw.eugene.textgaming.data.entity.ConversationEntity
 import ndw.eugene.textgaming.data.entity.LocationEntity
 import ndw.eugene.textgaming.data.entity.OptionEntity
+import ndw.eugene.textgaming.data.repository.CharacterRepository
 import ndw.eugene.textgaming.data.repository.ConversationRepository
 import ndw.eugene.textgaming.data.repository.LocationRepository
 import ndw.eugene.textgaming.data.repository.OptionRepository
@@ -23,6 +25,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class ConversationLoader(
     private val locationRepository: LocationRepository,
+    private val characterRepository: CharacterRepository,
     private val conversationRepository: ConversationRepository,
     private val optionRepository: OptionRepository,
     private val choiceService: ChoiceService,
@@ -39,13 +42,21 @@ class ConversationLoader(
         logger.info { "location ${conversation.locationName} saved" }
         logger.info { "start saving conversations for location: ${conversation.locationName}" }
 
+        val characters = conversation.conversationParts.map { it.character }.toSet()
+        characters.forEach {
+            val characterEntity = CharacterEntity()
+            characterEntity.name = it
+            characterRepository.save(characterEntity)
+        }
+
         //save conversations
         val conversationIdToId = HashMap<Long, Long>()
         var savedConversationCounter = 0
         conversation.conversationParts.forEach {
             val newConversation = ConversationEntity()
             newConversation.locationId = locationId
-            newConversation.person = it.character
+            newConversation.character =
+                characterRepository.findByName(it.character) ?: throw IllegalArgumentException("Character not found")
             newConversation.conversationText = it.text
             newConversation.illustration = it.illustration ?: ""
             newConversation.processorId = it.processorId ?: ""
