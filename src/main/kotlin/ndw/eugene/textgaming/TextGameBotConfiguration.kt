@@ -30,7 +30,7 @@ class TextGameBotConfiguration {
         gameService: GameService,
         managerService: ManagerService,
         feedbackService: FeedbackService,
-        authService: AuthService,
+        userService: UserService,
         choiceService: ChoiceService,
         locationService: LocationService,
     ): Bot {
@@ -51,8 +51,8 @@ class TextGameBotConfiguration {
                 message {
                     val username = message.from?.username ?: ""
                     val chatId = message.chat.id
-                    if (!(authService.checkAuthorized(chatId))) {
-                        authService.createUser(chatId, username)
+                    if (!(userService.checkAuthorized(chatId))) {
+                        userService.createUser(chatId, username)
                     }
                 }
                 callbackQuery {
@@ -60,43 +60,85 @@ class TextGameBotConfiguration {
                     val username = callbackQuery.from.username ?: ""
                     val chatId = message?.chat?.id ?: return@callbackQuery
 
-                    if (!(authService.checkAuthorized(chatId))) {
-                        authService.createUser(chatId, username)
+                    if (!(userService.checkAuthorized(chatId))) {
+                        userService.createUser(chatId, username)
                     }
                 }
 
                 command("copyright") {
+                    val locale = userService.getUser(message.chat.id).lang
                     bot.sendMessage(
                         chatId = ChatId.fromId(message.chat.id),
-                        text = COPYRIGHT_MESSAGE,
+                        text = SystemMessagesService.getMessage(
+                            Locale.valueOf(locale),
+                            SystemMessageType.COPYRIGHT_MESSAGE
+                        ),
                         parseMode = ParseMode.HTML
                     )
                 }
                 command("report") {
+                    val locale = userService.getUser(message.chat.id).lang
                     val reportText = args.joinToString(" ")
                     feedbackService.writeReport(message.chat.id, reportText)
 
-                    bot.sendMessage(ChatId.fromId(message.chat.id), REPORT_RECEIVED_MESSAGE)
+                    bot.sendMessage(
+                        ChatId.fromId(message.chat.id),
+                        SystemMessagesService.getMessage(
+                            Locale.valueOf(locale),
+                            SystemMessageType.REPORT_RECEIVED_MESSAGE
+                        )
+                    )
                 }
                 command("feedback") {
+                    val locale = userService.getUser(message.chat.id).lang
                     val feedbackText = args.joinToString(" ")
                     feedbackService.writeFeedback(message.chat.id, feedbackText)
 
-                    bot.sendMessage(ChatId.fromId(message.chat.id), FEEDBACK_RECEIVED_MESSAGE)
+                    bot.sendMessage(
+                        ChatId.fromId(message.chat.id),
+                        SystemMessagesService.getMessage(
+                            Locale.valueOf(locale),
+                            SystemMessageType.FEEDBACK_RECEIVED_MESSAGE
+                        )
+                    )
                 }
                 command("start") {
                     val chatId = message.chat.id
-                    val responseMessage = if (gameService.userHasGameActive(chatId)) {
-                        GAME_STARTED_MESSAGE
-                    } else {
-                        WELCOME_MESSAGE
-                    }
-
                     bot.sendMessage(
                         chatId = ChatId.fromId(chatId),
-                        text = responseMessage,
-                        replyMarkup = createStartGameButton(),
+                        text = "choose language",
+                        replyMarkup = createLanguageButtons(),
                     )
+                }
+
+                callbackQuery {
+                    val message = callbackQuery.message
+                    val chatId = message?.chat?.id ?: return@callbackQuery
+                    if (callbackQuery.data.startsWith(ButtonId.LOCALE.name)) {
+                        val localeName = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
+                        val localeToSet = if (localeName == "EN") {
+                            Locale.EN
+                        } else {
+                            Locale.RU
+                        }
+                        userService.setLanguage(chatId, localeToSet)
+                        val userLocale = userService.getUser(chatId).lang
+                        val locale = Locale.valueOf(userLocale)
+                        val responseMessage = if (gameService.userHasGameActive(chatId)) {
+                            SystemMessagesService.getMessage(
+                                locale,
+                                SystemMessageType.GAME_STARTED_MESSAGE
+                            )
+                        } else {
+                            SystemMessagesService.getMessage(locale, SystemMessageType.WELCOME_MESSAGE)
+                        }
+
+                        bot.sendMessage(
+                            chatId = ChatId.fromId(chatId),
+                            text = responseMessage,
+                            replyMarkup = createStartGameButton(locale),
+                        )
+                    }
                 }
 
                 callbackQuery {
@@ -105,9 +147,10 @@ class TextGameBotConfiguration {
                         val chatId = message?.chat?.id ?: return@callbackQuery
                         val optionId = callbackQuery.data.split(BUTTON_ID_DELIMITER)[1]
                         val result = gameService.chooseOption(chatId, optionId)
-
+                        val userLocale = userService.getUser(chatId).lang
+                        val locale = Locale.valueOf(userLocale)
                         editMessage(bot, message)
-                        bot.sendGameMessage(chatId, result)
+                        bot.sendGameMessage(chatId, result, locale)
                     }
                 }
                 callbackQuery {
@@ -115,7 +158,10 @@ class TextGameBotConfiguration {
                         val message = callbackQuery.message
                         val chatId = message?.chat?.id ?: return@callbackQuery
                         val result = gameService.startNewGameForUser(chatId)
-                        bot.sendGameMessage(chatId, result)
+                        val userLocale = userService.getUser(chatId).lang
+                        val locale = Locale.valueOf(userLocale)
+
+                        bot.sendGameMessage(chatId, result, locale)
                     }
                 }
 
@@ -124,22 +170,24 @@ class TextGameBotConfiguration {
                     if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     var result = ""
-                    authService.getAllUsers().forEach { result = result + "," + it.id }
+                    userService.getAllUsers().forEach { result = result + "," + it.id }
                     bot.sendMessage(chatId = ChatId.fromId(chatId), text = result)
                 }
                 command("start_in") {
                     if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val result = gameService.startNewGameForUser(chatId, args[0].uppercase())
-
-                    bot.sendGameMessage(chatId, result)
+                    val userLocale = userService.getUser(chatId).lang
+                    val locale = Locale.valueOf(userLocale)
+                    bot.sendGameMessage(chatId, result, locale)
                 }
                 command("whereami") {
                     if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val result = gameService.getUserCurrentPlace(chatId)
-
-                    bot.sendGameMessage(chatId, result)
+                    val userLocale = userService.getUser(chatId).lang
+                    val locale = Locale.valueOf(userLocale)
+                    bot.sendGameMessage(chatId, result, locale)
                 }
                 command("locations") {
                     if (!checkAdmin(message)) return@command
@@ -214,9 +262,9 @@ class TextGameBotConfiguration {
         }
     }
 
-    private fun Bot.sendGameMessage(chatId: Long, message: GameMessage) {
+    private fun Bot.sendGameMessage(chatId: Long, message: GameMessage, locale: Locale) {
         val availableOptions = message.options.filter { it.available }
-        val optionButtons = optionsToButtons(availableOptions)
+        val optionButtons = optionsToButtons(locale, availableOptions)
         val formatResponse = formatResponse(message.currentConversation, availableOptions)
 
         if (message.currentConversation.illustration != null) {

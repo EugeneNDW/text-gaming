@@ -5,7 +5,7 @@ import ndw.eugene.textgaming.data.repository.UserInfoRepository
 import org.springframework.stereotype.Service
 
 @Service
-class AuthService(private val userInfoRepository: UserInfoRepository) {
+class UserService(private val userInfoRepository: UserInfoRepository) {
 
     fun checkAuthorized(id: Long): Boolean {
         val user = userInfoRepository.findById(id)
@@ -15,16 +15,22 @@ class AuthService(private val userInfoRepository: UserInfoRepository) {
         return false
     }
 
+    fun setLanguage(id: Long, locale: Locale) {
+        val user = userInfoRepository.findById(id).orElseThrow { IllegalArgumentException() }
+        user.lang = locale.name
+        userInfoRepository.save(user)
+    }
+
+    fun getUser(id: Long): UserInfo {
+        return userInfoRepository.findById(id).orElseThrow { IllegalArgumentException() }
+    }
+
     fun createUser(userId: Long, username: String) {
         val userInfo = UserInfo()
         userInfo.id = userId
         userInfo.username = username
         userInfo.permit = true
         userInfoRepository.save(userInfo)
-    }
-
-    fun removeUser(userId: Long) {
-        userInfoRepository.deleteById(userId)
     }
 
     fun getAllUsers(): Iterable<UserInfo> {

@@ -11,34 +11,17 @@ import ndw.eugene.textgaming.data.UserOption
 import ndw.eugene.textgaming.data.entity.Choice
 import ndw.eugene.textgaming.data.entity.GameState
 import ndw.eugene.textgaming.data.entity.LocationEntity
+import ndw.eugene.textgaming.services.Locale
+import ndw.eugene.textgaming.services.SystemMessageType
+import ndw.eugene.textgaming.services.SystemMessagesService
 
-private const val DEFAULT_OPTION_TEXT = "..."
-private const val DEFAULT_OPTION_BUTTON_TEXT = "continue..."
-private const val NEW_GAME_BUTTON_TEXT = "Embark on another ludicrous journey"
 private const val TEXT_OPTIONS_DELIMITER = "\n\n"
 private const val CHARACTER_TEXT_DELIMITER = "\n"
-
-const val UNAUTHORIZED_MESSAGE =
-    " Your Wayfarer Permit seems to be forfeit. Please, authorize yourself for the Admiralty."
-const val REPORT_RECEIVED_MESSAGE = "The Admiralty has received your report. It will be considered."
-const val FEEDBACK_RECEIVED_MESSAGE =
-    "Thank you for your feedback! The Admiralty will treat it with the utmost attention."
-const val GAME_STARTED_MESSAGE = "Your journey has already begun. If you restart, the progress will be lost."
-const val WELCOME_MESSAGE = "Welcome to the World. Don’t get lost. Forget who you are."
-const val COPYRIGHT_MESSAGE =
-    """
-    <b>Copyright © 2024 Sofia Ezdina. All Rights Reserved.</b>
-    
-Welcome to The Navigator! This game and all its parts (like stories, characters, and graphics) are created by me, Sofia Ezdina, and are protected by law. You're welcome to play this game for your own fun, but please don't copy, share, or sell any part of it without my permission.
-
-Enjoy the adventure, and if you need to reach out, contact me at godhasleft@gmail.com
-"""
-
-
+private const val DEFAULT_OPTION_TEXT = "..."
 const val BUTTON_ID_DELIMITER = ":"
 
 enum class ButtonId {
-    CHOOSE, UNCHOOSE, OPTION, START, LOCATION
+    CHOOSE, UNCHOOSE, OPTION, START, LOCATION, LOCALE
 }
 
 fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
@@ -96,12 +79,25 @@ fun editMessage(bot: Bot, message: Message) {
     }
 }
 
-fun createStartGameButton(): InlineKeyboardMarkup {
+fun createLanguageButtons(): InlineKeyboardMarkup {
+    val buttons: MutableList<InlineKeyboardButton> = mutableListOf()
+    Locale.entries.forEach {
+        buttons.add(
+            InlineKeyboardButton.CallbackData(
+                text = it.name,
+                callbackData = ButtonId.LOCALE.name + BUTTON_ID_DELIMITER + it.name
+            )
+        )
+    }
+    return InlineKeyboardMarkup.create(buttons)
+}
+
+fun createStartGameButton(locale: Locale): InlineKeyboardMarkup {
     val buttons: MutableList<InlineKeyboardButton> = mutableListOf()
 
     buttons.add(
         InlineKeyboardButton.CallbackData(
-            text = NEW_GAME_BUTTON_TEXT,
+            text = SystemMessagesService.getMessage(locale, SystemMessageType.NEW_GAME_BUTTON_TEXT),
             callbackData = ButtonId.START.name
         )
     )
@@ -109,14 +105,14 @@ fun createStartGameButton(): InlineKeyboardMarkup {
     return InlineKeyboardMarkup.create(buttons)
 }
 
-fun optionsToButtons(options: List<UserOption>): InlineKeyboardMarkup {
+fun optionsToButtons(locale: Locale, options: List<UserOption>): InlineKeyboardMarkup {
     val buttons: MutableList<InlineKeyboardButton> = mutableListOf()
 
     val hasOnlyDefaultOption = options.size == 1 && options[0].option.optionText == DEFAULT_OPTION_TEXT
     if (hasOnlyDefaultOption) {
         buttons.add(
             InlineKeyboardButton.CallbackData(
-                text = DEFAULT_OPTION_BUTTON_TEXT,
+                text = SystemMessagesService.getMessage(locale, SystemMessageType.DEFAULT_OPTION_BUTTON_TEXT),
                 callbackData = "${ButtonId.OPTION.name}$BUTTON_ID_DELIMITER${options[0].option.uuid}"
             )
         )
