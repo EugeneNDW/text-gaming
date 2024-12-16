@@ -1,6 +1,7 @@
 package ndw.eugene.textgaming.data.entity
 
 import jakarta.persistence.*
+import ndw.eugene.textgaming.services.Locale
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
@@ -23,6 +24,7 @@ class GameState {
 
     @Column(nullable = false, name = "current_conversation_id")
     var currentConversationId: Long = 0
+    var lang: String = Locale.EN.name
 
     @OneToMany(mappedBy = "gameState", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     val gameChoices: MutableSet<GameChoice> = mutableSetOf()

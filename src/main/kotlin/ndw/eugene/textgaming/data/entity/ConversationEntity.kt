@@ -11,13 +11,13 @@ class ConversationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    // Add a ManyToOne relationship to CharacterEntity
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "character_id", nullable = false)
     var character: CharacterEntity? = null
 
-    @Column(name = "conversation_text", nullable = false)
-    var conversationText: String = ""
+    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "text_id", nullable = false)
+    var text: TextEntity? = null
 
     @Column(name = "processor_id", nullable = false)
     var processorId: String = ""

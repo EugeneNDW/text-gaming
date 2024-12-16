@@ -3,6 +3,7 @@ package ndw.eugene.textgaming.controllers
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import ndw.eugene.textgaming.services.GameService
+import ndw.eugene.textgaming.services.SystemMessagesService
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -68,7 +69,7 @@ class GameController(private val gameService: GameService) {
         gameService.createOption(locationId, conversationId, request)
     }
 
-    @PostMapping("/locations/{locationId}/conversations")
+    @PostMapping("/locations/{locationId}/conversations/{lang}")
     fun createConversation(
         @PathVariable locationId: Long,
         @RequestBody conversationRequest: ConversationRequest
@@ -77,14 +78,14 @@ class GameController(private val gameService: GameService) {
         return ConversationResponse(
             conversationEntity.id!!,
             conversationEntity.character!!.name,
-            conversationEntity.conversationText,
+            SystemMessagesService.getLocalizedText(conversationEntity.text, "en"),
             conversationEntity.processorId,
             conversationEntity.illustration,
             conversationEntity.locationId
         )
     }
 
-    @GetMapping("/locations/{locationId}/conversations")
+    @GetMapping("/locations/{locationId}/conversations/{lang}")
     fun getConversationsByLocation(
         @PathVariable locationId: Long
     ): List<ConversationResponse> {
@@ -93,7 +94,7 @@ class GameController(private val gameService: GameService) {
             ConversationResponse(
                 conversation.id!!,
                 conversation.character!!.name,
-                conversation.conversationText,
+                SystemMessagesService.getLocalizedText(conversation.text, "en"),
                 conversation.processorId,
                 conversation.illustration,
                 conversation.locationId
@@ -101,7 +102,7 @@ class GameController(private val gameService: GameService) {
         }
     }
 
-    @GetMapping("/locations/{locationId}/options")
+    @GetMapping("/locations/{locationId}/options/{lang}")
     fun getOptionsByLocation(
         @PathVariable locationId: Long
     ): List<OptionResponse> {
@@ -111,7 +112,7 @@ class GameController(private val gameService: GameService) {
                 option.id!!,
                 option.fromId,
                 option.toId,
-                option.optionText,
+                SystemMessagesService.getLocalizedText(option.text, "en"),
                 option.optionCondition,
                 option.locationId,
                 null
@@ -119,7 +120,7 @@ class GameController(private val gameService: GameService) {
         }
     }
 
-    @GetMapping("/locations/{locationId}/conversations/{conversationId}/options")
+    @GetMapping("/locations/{locationId}/conversations/{conversationId}/options/{lang}")
     fun getOptionsByConversationId(
         @PathVariable locationId: Long,
         @PathVariable conversationId: Long

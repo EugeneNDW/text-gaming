@@ -92,7 +92,7 @@ fun createLanguageButtons(): InlineKeyboardMarkup {
     return InlineKeyboardMarkup.create(buttons)
 }
 
-fun createStartGameButton(locale: Locale): InlineKeyboardMarkup {
+fun createStartGameButton(locale: String): InlineKeyboardMarkup {
     val buttons: MutableList<InlineKeyboardButton> = mutableListOf()
 
     buttons.add(
@@ -105,7 +105,7 @@ fun createStartGameButton(locale: Locale): InlineKeyboardMarkup {
     return InlineKeyboardMarkup.create(buttons)
 }
 
-fun optionsToButtons(locale: Locale, options: List<UserOption>): InlineKeyboardMarkup {
+fun optionsToButtons(locale: String, options: List<UserOption>): InlineKeyboardMarkup {
     val buttons: MutableList<InlineKeyboardButton> = mutableListOf()
 
     val hasOnlyDefaultOption = options.size == 1 && options[0].option.optionText == DEFAULT_OPTION_TEXT

@@ -18,8 +18,9 @@ class OptionEntity {
     @Column(name = "to_id", nullable = false)
     var toId: Long = 0
 
-    @Column(name = "option_text", nullable = false)
-    var optionText: String = ""
+    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "text_id", nullable = false)
+    var text: TextEntity? = null
 
     @Column(name = "option_condition", nullable = false)
     var optionCondition: String = ""

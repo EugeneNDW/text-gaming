@@ -15,7 +15,6 @@ class UserInfo {
     var id: Long = 0
     var username: String = ""
     var permit: Boolean = true
-    var lang: String = Locale.EN.name
 
     @Embedded
     val auditInfo: AuditInfo = AuditInfo()

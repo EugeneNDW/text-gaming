@@ -1,5 +1,7 @@
 package ndw.eugene.textgaming.services
 
+import ndw.eugene.textgaming.data.entity.TextEntity
+
 class SystemMessagesService private constructor() {
     companion object {
         private const val DEFAULT_MESSAGE = "Message not found."
@@ -27,14 +29,25 @@ Enjoy the adventure, and if you need to reach out, contact me at godhasleft@gmai
             SystemMessageType.WELCOME_MESSAGE to "Добро пожаловать в Мир. Не пропадите. Забудьте себя.",
         )
 
-        private val storage: Map<Locale, Map<SystemMessageType, String>> = mapOf(
-            Locale.EN to enMessages,
-            Locale.RU to ruMessages
+        private val storage: Map<String, Map<SystemMessageType, String>> = mapOf(
+            Locale.EN.name to enMessages,
+            Locale.RU.name to ruMessages
         )
 
-        fun getMessage(locale: Locale, type: SystemMessageType): String {
+        fun getMessage(locale: String, type: SystemMessageType): String {
             val messages = storage[locale] ?: enMessages
             return messages[type] ?: enMessages[type] ?: DEFAULT_MESSAGE
+        }
+
+        fun getLocalizedText(text: TextEntity?, languageCode: String): String {
+            if (text == null) return ""
+            val translation = text.translations.find { it.id?.languageCode == languageCode }
+            return translation?.translatedText ?: fallbackText(text)
+        }
+
+        private fun fallbackText(text: TextEntity): String {
+            val fallback = text.translations.find { it.id?.languageCode == "en" }
+            return fallback?.translatedText ?: ""
         }
     }
 }

@@ -35,13 +35,10 @@ class GameService(
         return usersCurrentGame != null && !usersCurrentGame.isEnded
     }
 
-    fun startNewGameForUser(userId: Long, location: String = "DOCKS"): GameMessage {
-        val game = createGameForUser(userId, location)
-        processConversation(game)
-        val savedGame = gameStateRepository.save(game)
-
-        logger.info { "game with id: ${savedGame.id} for user: $userId was started in location: $location" }
-        return getGameMessage(savedGame)
+    fun startGame(userId: Long): GameMessage {
+        val currentGame = getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
+        processConversation(currentGame)
+        return getGameMessage(currentGame)
     }
 
     fun chooseOption(userId: Long, optionId: String): GameMessage {
@@ -75,10 +72,17 @@ class GameService(
         val savedLocation = locationRepository.save(locationEntity)
 
         val conversationRequest = location.firstConversationPart
+        val translationEntity = TextTranslationEntity().apply {
+            id = TextTranslationKey(0, "en")
+            translatedText = conversationRequest.conversationText
+        }
+        val text = TextEntity()
+        text.addTranslation(translationEntity)
+
         val conversation = ConversationEntity()
         conversation.character = characterRepository.findByName(conversationRequest.person) ?: throw IllegalArgumentException("Character not found")
         conversation.illustration = conversationRequest.illustration
-        conversation.conversationText = conversationRequest.conversationText
+        conversation.text = text
         conversation.processorId = conversationRequest.processorId
         conversation.locationId = savedLocation.id!!
         val savedConversation = conversationRepository.save(conversation)
@@ -96,9 +100,16 @@ class GameService(
         }
         val character = characterRepository.findByName(createConversation.person) ?: throw IllegalArgumentException("Character not found")
 
+        val translationEntity = TextTranslationEntity().apply {
+            id = TextTranslationKey(0, "en")
+            translatedText = createConversation.conversationText
+        }
+        val text = TextEntity()
+        text.addTranslation(translationEntity)
+
         val newConversation = ConversationEntity()
         newConversation.locationId = location.id!!
-        newConversation.conversationText = createConversation.conversationText
+        newConversation.text = text
         newConversation.character = character
         newConversation.illustration = createConversation.illustration
         newConversation.processorId = createConversation.processorId
@@ -106,7 +117,18 @@ class GameService(
         return conversationRepository.save(newConversation)
     }
 
-    private fun createGameForUser(userId: Long, startLocation: String): GameState {
+    fun getLocale(userId: Long): String {
+        val gameState = getUsersCurrentGame(userId)
+        return gameState?.lang ?: "EN"
+    }
+
+    fun updateLocale(userId: Long, locale: String): GameState {
+        val gameState = getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
+        gameState.lang = locale
+        return gameStateRepository.save(gameState)
+    }
+
+    fun createGameForUser(userId: Long, startLocation: String): GameState {
         val locationEntity = locationRepository.findByName(startLocation)
         val conversationStartId = locationEntity?.startId ?: throw IllegalArgumentException()
         val game = GameState()
@@ -148,7 +170,7 @@ class GameService(
         return ConversationPart(
             conversation.id!!,
             conversation.character!!.name,
-            conversation.conversationText,
+            SystemMessagesService.getLocalizedText(conversation.text, "EN"),
             illustrationsLoader.getIllustration(conversation.illustration),
             conversation.processorId
         )
@@ -181,7 +203,7 @@ class GameService(
                 it.id!!,
                 it.fromId,
                 it.toId,
-                it.optionText,
+                SystemMessagesService.getLocalizedText(it.text, "EN"),
                 it.optionCondition
             )
             option
@@ -228,9 +250,16 @@ class GameService(
         } else if (request.conversationRequest != null) {
             val conversationRequest = request.conversationRequest
 
+            val translationEntity = TextTranslationEntity().apply {
+                id = TextTranslationKey(0, "en")
+                translatedText = conversationRequest.conversationText
+            }
+            val textEntity = TextEntity()
+            textEntity.addTranslation(translationEntity)
+
             val conversationToSave = ConversationEntity().apply {
                 character = characterRepository.findByName(conversationRequest.person) ?: throw IllegalArgumentException("Character not found")
-                conversationText = conversationRequest.conversationText
+                text = textEntity
                 processorId = conversationRequest.processorId
                 illustration = conversationRequest.illustration
                 this.locationId = locationIdFromRequest
@@ -241,11 +270,18 @@ class GameService(
             throw IllegalArgumentException("Either toConversationId or conversationRequest must be provided.")
         }
 
+        val translationEntity = TextTranslationEntity().apply {
+            id = TextTranslationKey(0, "en")
+            translatedText = optionRequest.optionText
+        }
+        val textEntity = TextEntity()
+        textEntity.addTranslation(translationEntity)
+
         val optionToSave = OptionEntity().apply {
             locationId = locationIdFromRequest
             fromId = conversationId
             toId = toConversationId
-            optionText = optionRequest.optionText
+            text = textEntity
             optionCondition = optionRequest.optionConditionId
         }
         optionRepository.save(optionToSave)
@@ -278,7 +314,7 @@ class GameService(
                 ConversationResponse(
                     id = toConv.id!!,
                     person = toConv.character!!.name,
-                    conversationText = toConv.conversationText,
+                    conversationText = SystemMessagesService.getLocalizedText(toConv.text, "en"),
                     processorId = toConv.processorId,
                     illustration = toConv.illustration,
                     locationId = toConv.locationId
@@ -289,7 +325,7 @@ class GameService(
                 id = option.id!!,
                 fromId = option.fromId,
                 toId = option.toId,
-                optionText = option.optionText,
+                optionText = SystemMessagesService.getLocalizedText(option.text, "en  "),
                 optionConditionId = option.optionCondition,
                 locationId = conversation.locationId,
                 toConversation = toConversationResponse

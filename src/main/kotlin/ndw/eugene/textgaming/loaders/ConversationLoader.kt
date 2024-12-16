@@ -7,10 +7,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import mu.KotlinLogging
-import ndw.eugene.textgaming.data.entity.CharacterEntity
-import ndw.eugene.textgaming.data.entity.ConversationEntity
-import ndw.eugene.textgaming.data.entity.LocationEntity
-import ndw.eugene.textgaming.data.entity.OptionEntity
+import ndw.eugene.textgaming.data.entity.*
 import ndw.eugene.textgaming.data.repository.CharacterRepository
 import ndw.eugene.textgaming.data.repository.ConversationRepository
 import ndw.eugene.textgaming.data.repository.LocationRepository
@@ -32,7 +29,6 @@ class ConversationLoader(
     private val counterService: CounterService,
 ) {
     fun loadLocation(conversation: Conversation) {
-        //save location
         val locationEntity = LocationEntity()
         logger.info { "migrate location: ${conversation.locationName}" }
         locationEntity.name = conversation.locationName
@@ -44,20 +40,30 @@ class ConversationLoader(
 
         val characters = conversation.conversationParts.map { it.character }.toSet()
         characters.forEach {
-            val characterEntity = CharacterEntity()
-            characterEntity.name = it
-            characterRepository.save(characterEntity)
+            val existingCharacter = characterRepository.findByName(it)
+
+            if (existingCharacter == null) {
+                val characterEntity = CharacterEntity()
+                characterEntity.name = it
+                characterRepository.save(characterEntity)
+            }
         }
 
-        //save conversations
         val conversationIdToId = HashMap<Long, Long>()
         var savedConversationCounter = 0
         conversation.conversationParts.forEach {
+            val translationEntity = TextTranslationEntity().apply {
+                id = TextTranslationKey(0, "en")
+                translatedText = it.text
+            }
+            val textEntity = TextEntity()
+            textEntity.addTranslation(translationEntity)
+
             val newConversation = ConversationEntity()
             newConversation.locationId = locationId
             newConversation.character =
                 characterRepository.findByName(it.character) ?: throw IllegalArgumentException("Character not found")
-            newConversation.conversationText = it.text
+            newConversation.text = textEntity
             newConversation.illustration = it.illustration ?: ""
             newConversation.processorId = it.processorId ?: ""
             val savedConversation = conversationRepository.save(newConversation)
@@ -78,19 +84,25 @@ class ConversationLoader(
         //save options
         var savedOptionCounter = 0
         conversation.options.forEach {
+            val translationEntity = TextTranslationEntity().apply {
+                id = TextTranslationKey(0, "en")
+                translatedText = it.optionText
+            }
+            val textEntity = TextEntity()
+            textEntity.addTranslation(translationEntity)
+
             val newOption = OptionEntity()
             newOption.fromId = conversationIdToId[it.fromId]
                 ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
             newOption.toId = conversationIdToId[it.toId]
                 ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
-            newOption.optionText = it.optionText
+            newOption.text = textEntity
             newOption.optionCondition = it.optionConditionId ?: ""
             newOption.locationId = locationId
             optionRepository.save(newOption)
             savedOptionCounter++
         }
 
-        //update startId for saved location
         savedLocation.startId = conversationIdToId[savedLocation.startId]
             ?: throw IllegalArgumentException("can't find conversation in saved ids, ABORT")
         locationRepository.save(savedLocation)

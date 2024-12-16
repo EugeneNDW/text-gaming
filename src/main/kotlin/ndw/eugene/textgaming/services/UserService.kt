@@ -15,12 +15,6 @@ class UserService(private val userInfoRepository: UserInfoRepository) {
         return false
     }
 
-    fun setLanguage(id: Long, locale: Locale) {
-        val user = userInfoRepository.findById(id).orElseThrow { IllegalArgumentException() }
-        user.lang = locale.name
-        userInfoRepository.save(user)
-    }
-
     fun getUser(id: Long): UserInfo {
         return userInfoRepository.findById(id).orElseThrow { IllegalArgumentException() }
     }
