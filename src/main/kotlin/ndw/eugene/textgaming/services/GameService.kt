@@ -289,7 +289,8 @@ class GameService(
 
     fun getOptionsByConversationId(
         locationId: Long,
-        conversationId: Long
+        conversationId: Long,
+        lang: String
     ): List<OptionResponse> {
         // Validate that the conversation exists and belongs to the location
         val conversation = conversationRepository.findById(conversationId).orElseThrow {
@@ -314,7 +315,7 @@ class GameService(
                 ConversationResponse(
                     id = toConv.id!!,
                     person = toConv.character!!.name,
-                    conversationText = SystemMessagesService.getLocalizedText(toConv.text, "en"),
+                    conversationText = SystemMessagesService.getLocalizedText(toConv.text, lang),
                     processorId = toConv.processorId,
                     illustration = toConv.illustration,
                     locationId = toConv.locationId
@@ -325,7 +326,7 @@ class GameService(
                 id = option.id!!,
                 fromId = option.fromId,
                 toId = option.toId,
-                optionText = SystemMessagesService.getLocalizedText(option.text, "en  "),
+                optionText = SystemMessagesService.getLocalizedText(option.text, lang),
                 optionConditionId = option.optionCondition,
                 locationId = conversation.locationId,
                 toConversation = toConversationResponse

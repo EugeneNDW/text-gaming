@@ -7,6 +7,8 @@ import ndw.eugene.textgaming.services.SystemMessagesService
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
+const val GAME_ID = 1
+
 @RestController
 @CrossOrigin(origins = ["http://localhost:3000"])
 @RequestMapping("/games/1")
@@ -69,32 +71,36 @@ class GameController(private val gameService: GameService) {
         gameService.createOption(locationId, conversationId, request)
     }
 
-    @PostMapping("/locations/{locationId}/conversations/{lang}")
+    @PostMapping(path = ["/locations/{locationId}/conversations/{lang}", "/locations/{locationId}/conversations"])
     fun createConversation(
         @PathVariable locationId: Long,
-        @RequestBody conversationRequest: ConversationRequest
+        @RequestBody conversationRequest: ConversationRequest,
+        @PathVariable(required = false) lang: String?
     ): ConversationResponse {
+        val chosenLanguage = lang ?: "EN"
         val conversationEntity = gameService.createConversation(locationId, conversationRequest)
         return ConversationResponse(
             conversationEntity.id!!,
             conversationEntity.character!!.name,
-            SystemMessagesService.getLocalizedText(conversationEntity.text, "en"),
+            SystemMessagesService.getLocalizedText(conversationEntity.text, chosenLanguage),
             conversationEntity.processorId,
             conversationEntity.illustration,
             conversationEntity.locationId
         )
     }
 
-    @GetMapping("/locations/{locationId}/conversations/{lang}")
+    @GetMapping(path = ["/locations/{locationId}/conversations/{lang}", "/locations/{locationId}/conversations"])
     fun getConversationsByLocation(
-        @PathVariable locationId: Long
+        @PathVariable locationId: Long,
+        @PathVariable(required = false) lang: String?
     ): List<ConversationResponse> {
+        val chosenLanguage = lang ?: "EN"
         val conversations = gameService.getConversationsByLocation(locationId)
         return conversations.map { conversation ->
             ConversationResponse(
                 conversation.id!!,
                 conversation.character!!.name,
-                SystemMessagesService.getLocalizedText(conversation.text, "en"),
+                SystemMessagesService.getLocalizedText(conversation.text, chosenLanguage),
                 conversation.processorId,
                 conversation.illustration,
                 conversation.locationId
@@ -102,17 +108,19 @@ class GameController(private val gameService: GameService) {
         }
     }
 
-    @GetMapping("/locations/{locationId}/options/{lang}")
+    @GetMapping(path = ["/locations/{locationId}/options/{lang}", "/locations/{locationId}/options"])
     fun getOptionsByLocation(
-        @PathVariable locationId: Long
+        @PathVariable locationId: Long,
+        @PathVariable(required = false) lang: String?
     ): List<OptionResponse> {
+        val chosenLanguage = lang ?: "EN"
         val options = gameService.getOptionsByLocation(locationId)
         return options.map { option ->
             OptionResponse(
                 option.id!!,
                 option.fromId,
                 option.toId,
-                SystemMessagesService.getLocalizedText(option.text, "en"),
+                SystemMessagesService.getLocalizedText(option.text, chosenLanguage),
                 option.optionCondition,
                 option.locationId,
                 null
@@ -120,12 +128,15 @@ class GameController(private val gameService: GameService) {
         }
     }
 
-    @GetMapping("/locations/{locationId}/conversations/{conversationId}/options/{lang}")
+    @GetMapping(path = ["/locations/{locationId}/conversations/{conversationId}/options/{lang}",
+        "/locations/{locationId}/conversations/{conversationId}/options"])
     fun getOptionsByConversationId(
         @PathVariable locationId: Long,
-        @PathVariable conversationId: Long
+        @PathVariable conversationId: Long,
+        @PathVariable(required = false) lang: String?
     ): List<OptionResponse> {
-        return gameService.getOptionsByConversationId(locationId, conversationId)
+        val chosenLanguage = lang ?: "EN"
+        return gameService.getOptionsByConversationId(locationId, conversationId, chosenLanguage)
     }
 
     @PostMapping("/characters")
