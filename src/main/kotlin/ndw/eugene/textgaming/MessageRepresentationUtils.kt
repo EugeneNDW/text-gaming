@@ -17,7 +17,7 @@ import ndw.eugene.textgaming.services.SystemMessagesService
 
 private const val TEXT_OPTIONS_DELIMITER = "\n\n"
 private const val CHARACTER_TEXT_DELIMITER = "\n"
-private const val DEFAULT_OPTION_TEXT = "..."
+const val DEFAULT_OPTION_TEXT = "..."
 const val BUTTON_ID_DELIMITER = ":"
 
 enum class ButtonId {
