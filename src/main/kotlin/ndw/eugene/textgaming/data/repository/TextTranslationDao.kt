@@ -10,26 +10,72 @@ import org.springframework.stereotype.Repository
 interface TextTranslationDao : JpaRepository<TextTranslationEntity, Long> {
 
     @Query(
-        """
-        SELECT DISTINCT tt
-        FROM TextTranslationEntity tt
-        JOIN tt.text t
-        LEFT JOIN ConversationEntity c ON c.text = t
-        LEFT JOIN OptionEntity o ON o.text = t
-        WHERE tt.id.languageCode = :langToFind
-          AND (c.locationId = :locationId OR o.locationId = :locationId)
-          AND NOT EXISTS (
-              SELECT 1 FROM TextTranslationEntity tte2
-              WHERE tte2.text = t
-                AND tte2.id.languageCode = :langToExclude
-          )
-    """
+        value = """
+        SELECT DISTINCT tte.*
+          FROM text_translations tte
+          JOIN texts txt ON tte.text_id = txt.id
+          JOIN conversations c ON c.text_id = txt.id
+         WHERE c.location_id = :locationId
+           AND tte.language_code = :langToFind
+           AND NOT EXISTS (
+             SELECT 1
+               FROM text_translations tte2
+              WHERE tte2.text_id = txt.id
+                AND tte2.language_code = :langToExclude
+           )
+    """,
+        nativeQuery = true
     )
-    fun findAllByLocationAndLangExcludingAnother(
+    fun findConversationTextsExcludingLanguageNative(
         @Param("locationId") locationId: Long,
         @Param("langToFind") langToFind: String,
         @Param("langToExclude") langToExclude: String
     ): List<TextTranslationEntity>
 
+    @Query(
+        value = """
+        SELECT DISTINCT tte.*
+          FROM text_translations tte
+          JOIN texts txt ON tte.text_id = txt.id
+          JOIN options o ON o.text_id = txt.id
+         WHERE o.location_id = :locationId
+           AND tte.language_code = :langToFind
+           AND NOT EXISTS (
+             SELECT 1
+               FROM text_translations tte2
+              WHERE tte2.text_id = txt.id
+                AND tte2.language_code = :langToExclude
+           )
+    """,
+        nativeQuery = true
+    )
+    fun findOptionTextsExcludingLanguageNative(
+        @Param("locationId") locationId: Long,
+        @Param("langToFind") langToFind: String,
+        @Param("langToExclude") langToExclude: String
+    ): List<TextTranslationEntity>
 
+    @Query(
+        value = """
+        SELECT DISTINCT tte.*
+          FROM text_translations tte
+          JOIN texts txt ON tte.text_id = txt.id
+          JOIN characters ch ON ch.name_text_id = txt.id
+          JOIN conversations c ON c.character_id = ch.id
+         WHERE c.location_id = :locationId
+           AND tte.language_code = :langToFind
+           AND NOT EXISTS (
+             SELECT 1
+               FROM text_translations tte2
+              WHERE tte2.text_id = txt.id
+                AND tte2.language_code = :langToExclude
+           )
+    """,
+        nativeQuery = true
+    )
+    fun findCharacterTextsExcludingLanguageNative(
+        @Param("locationId") locationId: Long,
+        @Param("langToFind") langToFind: String,
+        @Param("langToExclude") langToExclude: String
+    ): List<TextTranslationEntity>
 }

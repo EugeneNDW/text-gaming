@@ -10,6 +10,8 @@ class CharacterEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    @Column(nullable = false, unique = true)
-    var name: String = ""
+    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "name_text_id", nullable = false)
+    var nameText: TextEntity? = null
+
 }

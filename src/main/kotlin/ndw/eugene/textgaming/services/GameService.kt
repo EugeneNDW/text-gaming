@@ -151,7 +151,7 @@ class GameService(
     }
 
     private fun progressConversation(gameState: GameState, optionId: UUID) {
-        val option = getOptions(gameState.currentConversationId, gameState.location)
+        val option = getOptions(gameState)
             .find { it.uuid == optionId } ?: throw IllegalArgumentException("no option with id: $optionId")
         if (!conditionService.evaluateCondition(
                 option.condition,
@@ -169,15 +169,15 @@ class GameService(
             conversationRepository.getByLocationAndConversationId(locationName, gameState.currentConversationId)
         return ConversationPart(
             conversation.id!!,
-            conversation.character!!.name,
-            SystemMessagesService.getLocalizedText(conversation.text, "EN"),
+            SystemMessagesService.getLocalizedText(conversation.character!!.nameText, gameState.lang.lowercase()),
+            SystemMessagesService.getLocalizedText(conversation.text, gameState.lang.lowercase()),
             illustrationsLoader.getIllustration(conversation.illustration),
             conversation.processorId
         )
     }
 
     private fun getAvailableOptions(gameState: GameState): List<UserOption> {
-        val options = getOptions(gameState.currentConversationId, gameState.location).map {
+        val options = getOptions(gameState).map {
             val selected = isOptionSelected(gameState, it.uuid)
             val available = conditionService.evaluateCondition(it.condition, gameState)
 
@@ -197,13 +197,16 @@ class GameService(
         return gameState.gameHistory.find { it.optionId == optionId } != null
     }
 
-    private fun getOptions(currentConversationId: Long, location: String): List<Option> {
+    private fun getOptions(gameState: GameState): List<Option> {
+        val currentConversationId = gameState.currentConversationId
+        val location = gameState.location
+        val lang = gameState.lang
         return optionRepository.findAllByFromIdAndLocation(currentConversationId, location).map {
             val option = Option(
                 it.id!!,
                 it.fromId,
                 it.toId,
-                SystemMessagesService.getLocalizedText(it.text, "EN"),
+                SystemMessagesService.getLocalizedText(it.text, lang.lowercase()),
                 it.optionCondition
             )
             option
@@ -314,7 +317,7 @@ class GameService(
             val toConversationResponse = toConversationEntity?.let { toConv ->
                 ConversationResponse(
                     id = toConv.id!!,
-                    person = toConv.character!!.name,
+                    person = SystemMessagesService.getLocalizedText(conversation.character!!.nameText, "EN"),
                     conversationText = SystemMessagesService.getLocalizedText(toConv.text, lang),
                     processorId = toConv.processorId,
                     illustration = toConv.illustration,
@@ -334,14 +337,20 @@ class GameService(
         }
     }
 
-    fun createCharacter(request: CharacterRequest): CharacterResponse {
+    fun createCharacter(request: CharacterRequest, lang: String): CharacterResponse {
+        val translationEntity = TextTranslationEntity().apply {
+            id = TextTranslationKey(0, lang)
+            translatedText = request.name
+        }
+        val textEntity = TextEntity()
+        textEntity.addTranslation(translationEntity)
         val characterEntity = CharacterEntity().apply {
-            name = request.name
+            nameText = textEntity
         }
         val savedCharacter = characterRepository.save(characterEntity)
         return CharacterResponse(
             id = savedCharacter.id!!,
-            name = savedCharacter.name
+            name = SystemMessagesService.getLocalizedText(savedCharacter.nameText, "EN")
         )
     }
 
@@ -350,8 +359,7 @@ class GameService(
         return characters.map { character ->
             CharacterResponse(
                 id = character.id!!,
-                name = character.name
-            )
+                name = SystemMessagesService.getLocalizedText(character.nameText, "EN"))
         }
     }
 }

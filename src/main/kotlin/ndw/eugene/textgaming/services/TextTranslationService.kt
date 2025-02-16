@@ -40,13 +40,16 @@ class TextTranslationService(private val textRepository: TextDao, private val te
         langToFind: String,
         langToExclude: String
     ): List<TextTranslationEntity> {
-        return textTranslationDao.findAllByLocationAndLangExcludingAnother(
-            locationId,
-            langToFind.lowercase(),
-            langToExclude.lowercase()
-        ).filter {
-            it.translatedText != DEFAULT_OPTION_TEXT
-        }.sortedBy { it.text?.id }
+        val conversationTexts = textTranslationDao.findConversationTextsExcludingLanguageNative(locationId, langToFind, langToExclude)
+        val optionTexts = textTranslationDao.findOptionTextsExcludingLanguageNative(locationId, langToFind, langToExclude)
+        val characterTexts = textTranslationDao.findCharacterTextsExcludingLanguageNative(locationId, langToFind, langToExclude)
+
+        val combined = mutableListOf<TextTranslationEntity>()
+        combined.addAll(conversationTexts)
+        combined.addAll(optionTexts)
+        combined.addAll(characterTexts)
+
+        return combined.filter { it.translatedText != "..." }.sortedBy { it.text?.id }
     }
 
 }

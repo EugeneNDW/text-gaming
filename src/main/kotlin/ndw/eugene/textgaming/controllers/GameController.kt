@@ -81,7 +81,7 @@ class GameController(private val gameService: GameService) {
         val conversationEntity = gameService.createConversation(locationId, conversationRequest)
         return ConversationResponse(
             conversationEntity.id!!,
-            conversationEntity.character!!.name,
+            SystemMessagesService.getLocalizedText(conversationEntity.character!!.nameText, chosenLanguage),
             SystemMessagesService.getLocalizedText(conversationEntity.text, chosenLanguage),
             conversationEntity.processorId,
             conversationEntity.illustration,
@@ -99,7 +99,7 @@ class GameController(private val gameService: GameService) {
         return conversations.map { conversation ->
             ConversationResponse(
                 conversation.id!!,
-                conversation.character!!.name,
+                SystemMessagesService.getLocalizedText(conversation.character!!.nameText, chosenLanguage),
                 SystemMessagesService.getLocalizedText(conversation.text, chosenLanguage),
                 conversation.processorId,
                 conversation.illustration,
@@ -139,11 +139,13 @@ class GameController(private val gameService: GameService) {
         return gameService.getOptionsByConversationId(locationId, conversationId, chosenLanguage)
     }
 
-    @PostMapping("/characters")
+    @PostMapping(path = ["/characters/{lang}", "/characters"])
     fun createCharacter(
-        @RequestBody request: CharacterRequest
+        @RequestBody request: CharacterRequest,
+        @PathVariable(required = false) lang: String?
     ): CharacterResponse {
-        return gameService.createCharacter(request)
+        val chosenLanguage = lang ?: "en"
+        return gameService.createCharacter(request, chosenLanguage.lowercase())
     }
 
     @GetMapping("/characters")

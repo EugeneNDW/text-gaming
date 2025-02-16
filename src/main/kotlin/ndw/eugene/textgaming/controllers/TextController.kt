@@ -15,7 +15,7 @@ class TextController(private val textTranslationService: TextTranslationService)
         ): List<TranslationDto> {
 
         val translationsForLocation =
-            textTranslationService.getTranslationsForLocation(locationId, langToFind, langToExclude)
+            textTranslationService.getTranslationsForLocation(locationId, langToFind.lowercase(), langToExclude.lowercase())
 
         return translationsForLocation.map {
             TranslationDto(

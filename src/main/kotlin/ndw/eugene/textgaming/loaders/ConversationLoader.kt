@@ -42,9 +42,16 @@ class ConversationLoader(
         characters.forEach {
             val existingCharacter = characterRepository.findByName(it)
 
+            val translationEntity = TextTranslationEntity().apply {
+                id = TextTranslationKey(0, "en")
+                translatedText = it
+            }
+            val textEntity = TextEntity()
+            textEntity.addTranslation(translationEntity)
+
             if (existingCharacter == null) {
                 val characterEntity = CharacterEntity()
-                characterEntity.name = it
+                characterEntity.nameText = textEntity
                 characterRepository.save(characterEntity)
             }
         }

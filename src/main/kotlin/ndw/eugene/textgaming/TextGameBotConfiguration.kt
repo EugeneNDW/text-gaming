@@ -118,6 +118,7 @@ class TextGameBotConfiguration {
                             replyMarkup = createStartGameButton(locale),
                         )
                     } else {
+                        gameService.createGameForUser(chatId, "DOCKS")
                         bot.sendMessage(
                             chatId = ChatId.fromId(chatId),
                             text = "choose language",
