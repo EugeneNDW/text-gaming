@@ -115,7 +115,7 @@ class TextGameBotConfiguration {
                         bot.sendMessage(
                             chatId = ChatId.fromId(chatId),
                             text = responseMessage,
-                            replyMarkup = createStartGameButton(locale),
+                            replyMarkup = createStartNewGameButton(locale),
                         )
                     } else {
                         gameService.createGameForUser(chatId, "DOCKS")
@@ -151,6 +151,18 @@ class TextGameBotConfiguration {
                         val locale = gameService.getLocale(chatId)
                         editMessage(bot, message)
                         bot.sendGameMessage(chatId, result, locale)
+                    }
+                }
+                callbackQuery {
+                    if (callbackQuery.data == ButtonId.START_NEW.name) {
+                        val message = callbackQuery.message
+                        val chatId = message?.chat?.id ?: return@callbackQuery
+                        gameService.startNewGame(chatId)
+                        bot.sendMessage(
+                            chatId = ChatId.fromId(chatId),
+                            text = "choose language",
+                            replyMarkup = createLanguageButtons(),
+                        )
                     }
                 }
                 callbackQuery {

@@ -35,6 +35,14 @@ class GameService(
         return usersCurrentGame != null && !usersCurrentGame.isEnded
     }
 
+    fun startNewGame(userId: Long) {
+        val currentGame = getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
+        currentGame.isEnded = true;
+        gameStateRepository.save(currentGame)
+
+        createGameForUser(userId, "DOCKS")
+    }
+
     fun startGame(userId: Long): GameMessage {
         val currentGame = getUsersCurrentGame(userId) ?: throw IllegalArgumentException()
         processConversation(currentGame)
@@ -134,6 +142,7 @@ class GameService(
         val game = GameState()
         game.userId = userId
         game.location = startLocation
+        game.lang = "ru"
         game.currentConversationId = conversationStartId
 
         return gameStateRepository.save(game)

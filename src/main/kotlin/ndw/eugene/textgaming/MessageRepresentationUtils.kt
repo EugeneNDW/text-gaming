@@ -21,7 +21,7 @@ const val DEFAULT_OPTION_TEXT = "..."
 const val BUTTON_ID_DELIMITER = ":"
 
 enum class ButtonId {
-    CHOOSE, UNCHOOSE, OPTION, START, LOCATION, LOCALE
+    CHOOSE, UNCHOOSE, OPTION, START, START_NEW, LOCATION, LOCALE
 }
 
 fun formatResponse(conversationPart: ConversationPart, options: List<UserOption>): String {
@@ -89,6 +89,19 @@ fun createLanguageButtons(): InlineKeyboardMarkup {
             )
         )
     }
+    return InlineKeyboardMarkup.create(buttons)
+}
+
+fun createStartNewGameButton(locale: String): InlineKeyboardMarkup {
+    val buttons: MutableList<InlineKeyboardButton> = mutableListOf()
+
+    buttons.add(
+        InlineKeyboardButton.CallbackData(
+            text = SystemMessagesService.getMessage(locale, SystemMessageType.NEW_GAME_BUTTON_TEXT),
+            callbackData = ButtonId.START_NEW.name
+        )
+    )
+
     return InlineKeyboardMarkup.create(buttons)
 }
 
