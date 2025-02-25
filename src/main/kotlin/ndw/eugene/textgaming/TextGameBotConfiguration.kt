@@ -192,7 +192,6 @@ class TextGameBotConfiguration {
                     bot.sendGameMessage(chatId, message, locale)
                 }
                 command("whereami") {
-                    if (!checkAdmin(message)) return@command
                     val chatId = message.chat.id
                     val result = gameService.getUserCurrentPlace(chatId)
                     val locale = gameService.getLocale(chatId)
